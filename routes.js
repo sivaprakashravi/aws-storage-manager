@@ -11,10 +11,12 @@ const routes = {
     ADDSCRAP: '/product/add',
     ADDJOB: '/job/create',
     GETJOBS: '/job/all',
+    JOBSTATUS: '/job/status/:id/:scheduleId',
     ADDCATEGORY: '/category/add',
     GETCATEGORY: '/category/all',
     GETCONFIGURATION: '/configuration/all',
-    SETCONFIGURATION: '/configuration'
+    SETCONFIGURATION: '/configuration',
+    ADDPRODUCT: '/product/add'
 };
 
 module.exports = {

@@ -1,11 +1,11 @@
 const { get, post } = require('./mongo-client-processor');
-const categories = async () => {
-    const categoryList = await get('CATEGORIES');
-    return categoryList;
+const products = async () => {
+    const productList = await get('PRODUCTS');
+    return productList;
 }
-const addCategory = async (data) => {
-    const categoryInsert = await post('CATEGORIES', {insertMode: 'insertOne'}, data);
-    return categoryInsert;
+const addProduct = async (data) => {
+    const productInsert = await post('PRODUCTS', {insertMode: 'insertOne'}, data);
+    return productInsert;
 }
 
-module.exports = { categories, addCategory };
+module.exports = { products, addProduct };

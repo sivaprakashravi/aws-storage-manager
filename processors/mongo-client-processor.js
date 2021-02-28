@@ -37,6 +37,24 @@ const post = (collectionName, options, data) => {
     }).then(d => d);
 }
 
+const update = (collectionName, query, values) => {
+    return new Promise((resolve, reject) => {
+        MongoClient.connect(dbHost, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        }, (err, db) => {
+            if (err) reject(err);
+            var dbo = db.db("ECOM-CONSUMER");
+            dbo.collection(collectionName).updateOne(query, values, function (err, res) {
+                if (err) throw err;
+                console.log("1 document updated");
+                db.close();
+                resolve(true);
+            });
+        });
+    }).then(d => d);
+}
+
 const empty = (collectionName) => {
     return new Promise((resolve, reject) => {
         MongoClient.connect(dbHost, {
@@ -82,4 +100,4 @@ const inactivate = (collectionName) => {
     }).then(d => d);
 }
 
-module.exports = { get, post, empty, inactivate };
+module.exports = { get, post, update, empty, inactivate };
