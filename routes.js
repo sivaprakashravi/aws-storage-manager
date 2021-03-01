@@ -8,7 +8,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const routes = {
     MASTER: '/',
-    ADDSCRAP: '/product/add',
     ADDJOB: '/job/create',
     GETJOBS: '/job/all',
     JOBSTATUS: '/job/status/:id/:scheduleId',

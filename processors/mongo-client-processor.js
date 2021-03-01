@@ -1,5 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
 const { dbHost } = require('./../constants/defaults');
+const ObjectID = require('mongodb').ObjectID;
 const get = async (collectionName, filters) => {
     return new Promise((resolve, reject) => {
         MongoClient.connect(dbHost, {
@@ -29,7 +30,7 @@ const post = (collectionName, options, data) => {
             var dbo = db.db("ECOM-CONSUMER");
             dbo.collection(collectionName)[options.insertMode](data, (err, res) => {
                 if (err) reject(err);
-                console.log("1 document inserted");
+                // console.log("1 document inserted");
                 db.close();
                 resolve(true);
             });
@@ -45,17 +46,20 @@ const update = (collectionName, query, values) => {
         }, (err, db) => {
             if (err) reject(err);
             var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName).updateOne(query, values, function (err, res) {
-                if (err) throw err;
-                console.log("1 document updated");
-                db.close();
-                resolve(true);
-            });
+            dbo.collection(collectionName).updateOne(query,
+                { $set: values },
+                // { upsert: true },
+                function (err, res) {
+                    if (err) throw err;
+                    // console.log("1 document updated");
+                    db.close();
+                    resolve(true);
+                });
         });
     }).then(d => d);
 }
 
-const empty = (collectionName) => {
+const empty = (collectionName, filters = {}) => {
     return new Promise((resolve, reject) => {
         MongoClient.connect(dbHost, {
             useNewUrlParser: true,
@@ -63,7 +67,7 @@ const empty = (collectionName) => {
         }, (err, db) => {
             if (err) reject(err);
             var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName).deleteMany({}, () => {
+            dbo.collection(collectionName).deleteMany(filters, () => {
                 if (err) reject(err);
                 console.log(`All Documents removed from ${collectionName}`);
                 db.close();

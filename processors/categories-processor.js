@@ -4,7 +4,7 @@ const categories = async () => {
     return categoryList;
 }
 const addCategory = async (data) => {
-    const categoryInsert = await post('CATEGORIES', {insertMode: 'insertMany'}, data);
+    await post('CATEGORIES', {insertMode: 'insertMany'}, data);
     const freshCategories = await categories();
     return freshCategories;
 }

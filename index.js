@@ -24,10 +24,6 @@ routes.get('MASTER', (req, res) => {
     res.send(success(null, messages.MASTER));
 });
 
-routes.post('ADDSCRAP', (req, res) => {
-    res.send(success(null, messages.AMAZONPARENT));
-});
-
 routes.get('GETJOBS', async (req, res) => {
     arm(async () => {
         const job = await jobs();
@@ -57,8 +53,8 @@ routes.get('JOBSTATUS', async (req, res) => {
     arm(async () => {
         const { id, scheduleId } = req.params;
         if (req && req.params && id && scheduleId) {
-            const { perentage } = req.query;
-            const status = await updateJobStatus(id, scheduleId, perentage);
+            const { percentage } = req.query;
+            const status = await updateJobStatus(id, scheduleId, percentage);
             if (status) {
                 res.send(success(status));
             }
