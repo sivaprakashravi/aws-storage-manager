@@ -53,10 +53,10 @@ routes.get('JOBSTATUS', async (req, res) => {
     arm(async () => {
         const { id, scheduleId } = req.params;
         if (req && req.params && id && scheduleId) {
-            const { percentage } = req.query;
-            const status = await updateJobStatus(id, scheduleId, percentage);
-            if (status) {
-                res.send(success(status));
+            const { percentage, status } = req.query;
+            const statusResponse = await updateJobStatus(id, scheduleId, percentage, status);
+            if (statusResponse) {
+                res.send(success(statusResponse));
             }
         }
     })

@@ -21,10 +21,11 @@ const addJob = async (data) => {
     return categoryInsert;
 }
 
-const updateJobStatus = async (id, scheduleId, percentage) => {
+const updateJobStatus = async (id, scheduleId, percentage, status) => {
     const activeJob = await job(id);
     percentage = Number(percentage).toFixed();
     scheduleId = Number(scheduleId);
+    status = (percentage && percentage >= 100) ? 'Completed' : status;
     const categoryInsert = await update('JOBS', {
         _id: ObjectID(id),
         scheduleId

@@ -4,7 +4,6 @@ const configuration = async () => {
     return categoryList;
 }
 const setConfiguration = async (data) => {
-    data.active = true;
     const config = await post('CONFIGURATION', {insertMode: 'insertOne'}, data);
     return config;
 }

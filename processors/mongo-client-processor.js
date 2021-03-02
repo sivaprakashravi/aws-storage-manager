@@ -1,7 +1,8 @@
 const MongoClient = require('mongodb').MongoClient;
 const { dbHost } = require('./../constants/defaults');
 const ObjectID = require('mongodb').ObjectID;
-const get = async (collectionName, filters) => {
+const get = async (collectionName, filters = {}, projection = {}) => {
+    projection._id = 0;
     return new Promise((resolve, reject) => {
         MongoClient.connect(dbHost, {
             useNewUrlParser: true,
@@ -9,7 +10,7 @@ const get = async (collectionName, filters) => {
         }, (err, db) => {
             if (err) reject(err);
             var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName).find(filters).sort({ createdAt: -1 }).toArray((err, documents) => {
+            dbo.collection(collectionName).find(filters, {projection}).sort({ createdAt: -1 }).toArray((err, documents) => {
                 if (err) reject(err);
                 else {
                     resolve(documents);
