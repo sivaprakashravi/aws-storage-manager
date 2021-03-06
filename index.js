@@ -8,7 +8,7 @@ const { categories, addCategory, emptyAllCategory } = require('./processors/cate
 const { products, addProduct } = require('./processors/products-processor');
 const { jobs, addJob, updateJobStatus } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
-const { locales, addLocale, deleteLocale, updateProducts } = require('./processors/locale-processor');
+const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog } = require('./processors/locale-processor');
 const { port } = storage;
 const moment = require('moment');
 
@@ -133,6 +133,29 @@ routes.post('UPDATEPRODUCTS', async (req, res) => {
     arm(async () => {
         const config = await updateProducts(req);
         res.send(success(config));
+    });
+});
+
+routes.get('LOCALELOGS', async (req, res) => {
+    arm(async () => {
+        const config = await localeLogs();
+        res.send(success(config));
+    });
+});
+
+routes.post('ADDLOCALELOG', async (req, res) => {
+    arm(async () => {
+        const config = await addLocaleLog(req.body);
+        res.send(success(config));
+    });
+});
+
+routes.delete('ARCHIVELOCALELOG', async (req, res) => {
+    arm(async () => {
+        if (req && req.query && req.query.logId) {
+            const localeRemoved = await deleteLocaleLog(Number(req.query.logId));
+            res.send(success(localeRemoved));
+        }
     });
 });
 

@@ -26,8 +26,7 @@ const addJob = async (data) => {
 
 const updateJobStatus = async (id, scheduleId, percentage, status) => {
     const activeJob = await job(id);
-    console.log(percentage);
-    percentage = percentage ? Number(percentage).toFixed() : 0;
+    percentage = percentage ? Number(percentage).toFixed(2) : 0;
     scheduleId = Number(scheduleId);
     status = (percentage && percentage >= 100) ? 'Completed' : status;
     const categoryInsert = await update('JOBS', {
@@ -35,8 +34,8 @@ const updateJobStatus = async (id, scheduleId, percentage, status) => {
         scheduleId
     }, {
         percentage,
-        status: percentage > 0 ? ((percentage >= 100) ? 'Completed' : 'Running') : 'New',
-        active: percentage > 0 && (percentage >= 100) && !activeJob.interval ? false : true
+        status: percentage > 0 ? ((percentage >= 100) ? 'Completed' : 'Running') : status,
+        active: percentage > 0 && (percentage >= 100) && !activeJob[0].interval ? false : true
     });
     return categoryInsert;
 }

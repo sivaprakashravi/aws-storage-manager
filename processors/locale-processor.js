@@ -80,4 +80,34 @@ const updateProducts = async ({ body }) => {
     }
 }
 
-module.exports = { locales, locale, addLocale, deleteLocale, updateProducts };
+const localeLogs = async () => {
+    const filter = {};
+    filter.active = true;
+    const categoryList = await get('LOCALE-LOGS', filter);
+    return categoryList;
+}
+
+const localeLog = async (id) => {
+    if (id) {
+        const singleJob = await get('LOCALE-LOGS', { _id: ObjectID(id) });
+        return singleJob;
+    }
+}
+
+const addLocaleLog = async (data) => {
+    data.log = new Date().getTime();
+    data.active = true;
+    data.loggedBy = 'DEVELOPER';
+    data.loggedOn = moment().format();
+    const newJob = await post('LOCALE-LOGS', { insertMode: 'insertOne' }, data);
+    return newJob;
+}
+
+const deleteLocaleLog = async (localeId) => {
+    if (localeId) {
+        const singleJob = await inactivate('LOCALE-LOGS', { localeId });
+        return singleJob;
+    }
+}
+
+module.exports = { locales, locale, addLocale, deleteLocale, updateProducts, localeLogs, localeLog, addLocaleLog, deleteLocaleLog };

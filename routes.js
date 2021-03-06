@@ -19,7 +19,10 @@ const routes = {
     LOCALE: '/locale/all',
     ADDLOCALE: '/locale/add',
     DELETELOCALE: '/locale/delete',
-    UPDATEPRODUCTS: '/locale/apply'
+    UPDATEPRODUCTS: '/locale/apply',
+    LOCALELOGS: '/locale/log/all,',
+    ADDLOCALELOG: '/locale/log/add',
+    ARCHIVELOCALELOG: '/locale/log/archive',
 };
 
 module.exports = {
