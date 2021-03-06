@@ -17,9 +17,9 @@ const addProduct = async (data) => {
         data.history = isExists.history ? isExists.history : [];
         data.history.push(moment().format());
     }
-    const productInsert = await post('PRODUCTS', { insertMode: 'insertOne' }, data);
-    addScrapAmz(data);
-    return productInsert;
+    // const productInsert = await post('PRODUCTS', { insertMode: 'insertOne' }, data);
+    const addtoAmazon = await addScrapAmz(data);
+    return addtoAmazon;
 }
 
 const addScrapAmz = async (data) => {

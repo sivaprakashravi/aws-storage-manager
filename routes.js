@@ -15,7 +15,11 @@ const routes = {
     GETCATEGORY: '/category/all',
     GETCONFIGURATION: '/configuration/all',
     SETCONFIGURATION: '/configuration',
-    ADDPRODUCT: '/product/add'
+    ADDPRODUCT: '/product/add',
+    LOCALE: '/locale/all',
+    ADDLOCALE: '/locale/add',
+    DELETELOCALE: '/locale/delete',
+    UPDATEPRODUCTS: '/locale/apply'
 };
 
 module.exports = {
@@ -24,6 +28,9 @@ module.exports = {
     },
     post: async (route, callBack) => {
         app.post(routes[route], callBack);
+    },
+    delete: async (route, callBack) => {
+        app.delete(routes[route], callBack);
     },
     listen: (port) => {
         app.listen(port, () => {

@@ -8,6 +8,7 @@ const { categories, addCategory, emptyAllCategory } = require('./processors/cate
 const { products, addProduct } = require('./processors/products-processor');
 const { jobs, addJob, updateJobStatus } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
+const { locales, addLocale, deleteLocale, updateProducts } = require('./processors/locale-processor');
 const { port } = storage;
 const moment = require('moment');
 
@@ -26,7 +27,7 @@ routes.get('MASTER', (req, res) => {
 
 routes.get('GETJOBS', async (req, res) => {
     arm(async () => {
-        const job = await jobs();
+        const job = await jobs(req);
         if (job) {
             res.send(success(job));
         }
@@ -37,10 +38,6 @@ routes.post('ADDJOB', async (req, res) => {
     arm(async () => {
         if (req && req.body) {
             const newJob = req.body;
-            newJob.createdAt = moment().format();
-            newJob.scheduleId = new Date().getTime();
-            newJob.status = 'NEW';
-            newJob.scheduledBy = 'DEVELOPER';
             const job = await addJob(newJob);
             if (job) {
                 res.send(success(job));
@@ -105,6 +102,36 @@ routes.post('SETCONFIGURATION', (req, res) => {
 routes.get('GETCONFIGURATION', async (req, res) => {
     arm(async () => {
         const config = await configuration();
+        res.send(success(config));
+    });
+});
+
+routes.get('LOCALE', async (req, res) => {
+    arm(async () => {
+        const config = await locales();
+        res.send(success(config));
+    });
+});
+
+routes.post('ADDLOCALE', async (req, res) => {
+    arm(async () => {
+        const config = await addLocale(req.body);
+        res.send(success(config));
+    });
+});
+
+routes.delete('DELETELOCALE', async (req, res) => {
+    arm(async () => {
+        if (req && req.query && req.query.localeId) {
+            const localeRemoved = await deleteLocale(Number(req.query.localeId));
+            res.send(success(localeRemoved));
+        }
+    });
+});
+
+routes.post('UPDATEPRODUCTS', async (req, res) => {
+    arm(async () => {
+        const config = await updateProducts(req);
         res.send(success(config));
     });
 });

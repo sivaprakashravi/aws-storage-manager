@@ -1,8 +1,9 @@
 const MongoClient = require('mongodb').MongoClient;
 const { dbHost } = require('./../constants/defaults');
 const ObjectID = require('mongodb').ObjectID;
+
 const get = async (collectionName, filters = {}, projection = {}) => {
-    projection._id = 0;
+    // projection._id = 0;
     return new Promise((resolve, reject) => {
         MongoClient.connect(dbHost, {
             useNewUrlParser: true,
@@ -10,7 +11,7 @@ const get = async (collectionName, filters = {}, projection = {}) => {
         }, (err, db) => {
             if (err) reject(err);
             var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName).find(filters, {projection}).sort({ createdAt: -1 }).toArray((err, documents) => {
+            dbo.collection(collectionName).find(filters, { projection }).sort({ createdAt: -1 }).toArray((err, documents) => {
                 if (err) reject(err);
                 else {
                     resolve(documents);
@@ -68,9 +69,9 @@ const empty = (collectionName, filters = {}) => {
         }, (err, db) => {
             if (err) reject(err);
             var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName).deleteMany(filters, () => {
+            dbo.collection(collectionName).deleteMany(filters, (err, res) => {
                 if (err) reject(err);
-                console.log(`All Documents removed from ${collectionName}`);
+                console.log(`Documents removed from ${collectionName}`);
                 db.close();
                 resolve(true);
             });
@@ -78,31 +79,32 @@ const empty = (collectionName, filters = {}) => {
     }).then(d => d);
 }
 
-const inactivate = (collectionName) => {
-    return new Promise((resolve, reject) => {
-        MongoClient.connect(dbHost, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        }, (err, db) => {
-            if (err) reject(err);
-            var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName).find({ 'active': true }, (err) => {
+const inactivate = async (collectionName, filters) => {
+    filters.active = true;
+    const selection = await get(collectionName, filters);
+    if (selection && selection[0]) {
+        filters._id = selection[0]._id;
+        return new Promise((resolve, reject) => {
+            MongoClient.connect(dbHost, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            }, (err, db) => {
                 if (err) reject(err);
-                console.log(`All Documents removed from ${collectionName}`);
-                db.close();
-                resolve(true);
-            });
-            dbo.collection(collectionName).findOneAndUpdate({ active: true }, { $set: { active: false } }, { upsert: true },
-                (err) => {
-                    if (err) reject(err);
-                    console.log(`All Documents Updated from ${collectionName}`);
-                    db.close();
-                    resolve(true);
+                var dbo = db.db("ECOM-CONSUMER");
+                dbo.collection(collectionName).findOneAndUpdate(filters, { $set: { active: false } },
+                    (err, res) => {
+                        if (err) reject(err);
+                        console.log(`Item Inactivated: ${collectionName}`);
+                        db.close();
+                        resolve(true);
 
-                }
-            );
-        });
-    }).then(d => d);
+                    }
+                );
+            });
+        }).then(d => d);
+    } else {
+        return false;
+    }
 }
 
 module.exports = { get, post, update, empty, inactivate };

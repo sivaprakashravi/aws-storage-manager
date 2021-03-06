@@ -1,7 +1,8 @@
 const { get, post, empty, inactivate } = require('./mongo-client-processor');
 const configuration = async () => {
-    const categoryList = await get('CONFIGURATION');
-    return categoryList;
+    let config = await get('CONFIGURATION');
+    config = config && config.length ? config[0] : {};
+    return config;
 }
 const setConfiguration = async (data) => {
     const config = await post('CONFIGURATION', {insertMode: 'insertOne'}, data);
