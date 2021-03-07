@@ -9,9 +9,9 @@ const locales = async () => {
     return categoryList;
 }
 
-const locale = async (id) => {
-    if (id) {
-        const singleJob = await get('LOCALE', { _id: ObjectID(id) });
+const locale = async (filters) => {
+    if (filters) {
+        const singleJob = await get('LOCALE', filters);
         return singleJob;
     }
 }
@@ -41,19 +41,21 @@ const updateProducts = async ({ body }) => {
         await update('LOCALE-LOGS', { log: body.log }, { status: 'applied' });
 
     }
-    const { category, subCategory, locale } = body;
-    const { dealerCharge, deliveryCharge, dealerChargeType, deliveryChargeType } = locale;
+    let { category, subCategory } = body;
+    const localeObj = await locale(body.locale);
+    const { dealerCharge, deliveryCharge, dealerChargeType, deliveryChargeType } = localeObj[0];
     const filter = { category, subCategory };
     const amznProducts = await get('AMZ-SCRAPPED-DATA', filter);
     let count = 0;
     if (amznProducts && amznProducts.length) {
         const asin = amznProducts.map(a => a.asin);
         const priceList = amznProducts.map(({ buybox_new_listing_price, asin }) => {
+            buybox_new_listing_price = Number(buybox_new_listing_price);
             const dealCharge = dealerChargeType === 'value' ? dealerCharge : (buybox_new_listing_price / 100) * dealerCharge;
-            const delvCharge = deliveryChargeType === 'value' ? buybox_new_listing_price + deliveryCharge : buybox_new_listing_price + ((buybox_new_listing_price / 100) * deliveryCharge);
+            const delvCharge = deliveryChargeType === 'value' ? deliveryCharge : ((buybox_new_listing_price / 100) * deliveryCharge);
             return {
-                price: buybox_new_listing_price + dealCharge,
-                deliveryCharge: delvCharge,
+                price: Number(buybox_new_listing_price + dealCharge).toFixed(2),
+                deliveryCharge: Number(delvCharge).toFixed(2),
                 asin
             }
         });

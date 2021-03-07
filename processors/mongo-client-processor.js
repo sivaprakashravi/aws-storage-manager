@@ -21,6 +21,41 @@ const get = async (collectionName, filters = {}, projection = {}) => {
         });
     }).then(d => d);
 }
+
+const getSync = async (collectionName, filters = {}, projection = {}, pageNo = 1, limit = 25) => {
+    // projection._id = 0;
+    pageNo = Number(pageNo);
+    limit = Number(limit);
+    return new Promise((resolve, reject) => {
+        MongoClient.connect(dbHost, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        }, (err, db) => {
+            if (err) reject(err);
+            var dbo = db.db("ECOM-CONSUMER");
+            dbo.collection(collectionName).find(filters, { projection }).sort({ createdOn: -1 })
+                .limit(limit).skip(limit * (pageNo - 1)).toArray((err, documents) => {
+                    if (err) reject(err);
+                    else {
+                        resolve(documents);
+                    }
+                    db.close();
+                });
+        });
+    }).then(d => d).catch(e => console.log(e));
+}
+
+
+// .find(queryFind).sort(querySort)
+//    .limit(limit).skip(limit*(page-1), function(err, logItems) {
+//        if (!err) {
+//          return res.json(logItems);
+//        } else {
+//          return res.send({error: err});
+//        }
+//    })});
+
+
 const count = async (collectionName, filters = {}) => {
     // projection._id = 0;
     return new Promise((resolve, reject) => {
@@ -126,4 +161,4 @@ const inactivate = async (collectionName, filters) => {
     }
 }
 
-module.exports = { get, count, post, update, empty, inactivate };
+module.exports = { get, getSync, count, post, update, empty, inactivate };

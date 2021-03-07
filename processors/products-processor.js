@@ -1,6 +1,7 @@
-const { get, post, empty } = require('./mongo-client-processor');
+const { get, post, count, empty, getSync } = require('./mongo-client-processor');
 const moment = require('moment');
 const { ObjectID } = require('mongodb');
+const _ = require('lodash');
 const products = async () => {
     const productList = await get('AMZ-SCRAPPED-DATA');
     return productList;
@@ -8,6 +9,35 @@ const products = async () => {
 
 const product = async (asin) => {
     const existingProduct = await get('AMZ-SCRAPPED-DATA', { asin });
+    return existingProduct;
+}
+const processedProducts = async (req) => {
+    const { pageNo, category, subCategory, limit } = req.query;
+    const filters = { category, subCategory };
+    const length = await count('PRODUCTS', filters);
+    const productList = await getSync('PRODUCTS', filters, {}, pageNo, limit);
+    const merged = productList.map(async p => {
+        const price = await get('PRICE', { asin: p.asin });
+        return _.merge(p, price[0]);
+    });
+    return Promise.all(merged).then(d => {
+        return { products: d, total: length };
+    });
+}
+const downloadProcessedProducts = async (req) => {
+    const { pageNo, category, subCategory, limit } = req.query;
+    const filters = { category, subCategory };
+    const length = await count('PRODUCTS', filters);
+    const productList = await get('PRODUCTS', filters);
+    const merged = productList.map(async p => {
+        const price = await get('PRICE', { asin: p.asin });
+        return _.merge(p, price[0]);
+    });
+    return Promise.all(merged).then(d => d);
+}
+
+const processedProduct = async (asin) => {
+    const existingProduct = await get('PRODUCTS', { asin });
     return existingProduct;
 }
 
@@ -28,4 +58,4 @@ const addScrapAmz = async (data) => {
     return scrap;
 }
 
-module.exports = { products, addProduct };
+module.exports = { products, addProduct, processedProducts, processedProduct, downloadProcessedProducts };

@@ -26,6 +26,8 @@ const routes = {
     ADDLOCALELOG: '/locale/log/add',
     ARCHIVELOCALELOG: '/locale/log/archive',
     REFRESHLOCALELOG: '/locale/log/refresh',
+    PROCESSEDPRODUCTS: '/product/all',
+    PROCESSEDPRODUCTSDOWNLOAD: '/product/download'
 };
 
 module.exports = {

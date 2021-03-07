@@ -5,7 +5,7 @@ const messages = require('./utils/messages');
 const routes = require('./routes');
 const { storage } = require('./constants/defaults');
 const { categories, addCategory, emptyAllCategory } = require('./processors/categories-processor');
-const { products, addProduct } = require('./processors/products-processor');
+const { products, addProduct, processedProducts, processedProduct, downloadProcessedProducts } = require('./processors/products-processor');
 const { jobs, addJob, updateJobStatus, stopJob } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
 const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog, logProdCount } = require('./processors/locale-processor');
@@ -170,6 +170,20 @@ routes.get('REFRESHLOCALELOG', async (req, res) => {
     arm(async () => {
         const count = await logProdCount(req.query);
         res.send(success(count));
+    });
+});
+
+routes.get('PROCESSEDPRODUCTS', async (req, res) => {
+    arm(async () => {
+        const pdts = await processedProducts(req);
+        res.send(success(pdts));
+    });
+});
+
+routes.get('PROCESSEDPRODUCTSDOWNLOAD', async (req, res) => {
+    arm(async () => {
+        const pdts = await downloadProcessedProducts(req);
+        res.send(success(pdts));
     });
 });
 
