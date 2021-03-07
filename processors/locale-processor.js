@@ -1,4 +1,4 @@
-const { get, post, inactivate, empty } = require('./mongo-client-processor');
+const { get, count, post, update, inactivate, empty } = require('./mongo-client-processor');
 const ObjectID = require('mongodb').ObjectID;
 const moment = require('moment');
 const _ = require('lodash');
@@ -35,6 +35,12 @@ const deleteLocale = async (localeId) => {
 }
 
 const updateProducts = async ({ body }) => {
+    if (!body.noSave) {
+        await addLocaleLog(body);
+    } else {
+        await update('LOCALE-LOGS', { log: body.log }, { status: 'applied' });
+
+    }
     const { category, subCategory, locale } = body;
     const { dealerCharge, deliveryCharge, dealerChargeType, deliveryChargeType } = locale;
     const filter = { category, subCategory };
@@ -94,20 +100,34 @@ const localeLog = async (id) => {
     }
 }
 
+const logProdCount = async ({ log, category, subCategory }) => {
+    if (log) {
+        log = Number(log);
+        const length = await count('AMZ-SCRAPPED-DATA', { category, subCategory });
+        const countUpdate = await update('LOCALE-LOGS', { log }, { count: length });
+        return countUpdate;
+    }
+}
+
 const addLocaleLog = async (data) => {
     data.log = new Date().getTime();
     data.active = true;
     data.loggedBy = 'DEVELOPER';
     data.loggedOn = moment().format();
+    const { category, subCategory, locale } = data;
+    const filter = { category, subCategory };
+    const length = await count('AMZ-SCRAPPED-DATA', filter);
+    data.count = length;
     const newJob = await post('LOCALE-LOGS', { insertMode: 'insertOne' }, data);
-    return newJob;
+    const message = newJob ? 'Log Added' : 'Error Adding Log';
+    return { message };
 }
 
-const deleteLocaleLog = async (localeId) => {
-    if (localeId) {
-        const singleJob = await inactivate('LOCALE-LOGS', { localeId });
+const deleteLocaleLog = async (log) => {
+    if (log) {
+        const singleJob = await inactivate('LOCALE-LOGS', { log });
         return singleJob;
     }
 }
 
-module.exports = { locales, locale, addLocale, deleteLocale, updateProducts, localeLogs, localeLog, addLocaleLog, deleteLocaleLog };
+module.exports = { locales, locale, addLocale, deleteLocale, updateProducts, localeLogs, localeLog, addLocaleLog, deleteLocaleLog, logProdCount };

@@ -11,6 +11,8 @@ const routes = {
     ADDJOB: '/job/create',
     GETJOBS: '/job/all',
     JOBSTATUS: '/job/status/:id/:scheduleId',
+    JOBLOG: '/job/log/:id/:scheduleId',
+    STOPJOB: '/job/stop/:id/:scheduleId',
     ADDCATEGORY: '/category/add',
     GETCATEGORY: '/category/all',
     GETCONFIGURATION: '/configuration/all',
@@ -20,9 +22,10 @@ const routes = {
     ADDLOCALE: '/locale/add',
     DELETELOCALE: '/locale/delete',
     UPDATEPRODUCTS: '/locale/apply',
-    LOCALELOGS: '/locale/log/all,',
+    LOCALELOGS: '/locale/log/all',
     ADDLOCALELOG: '/locale/log/add',
     ARCHIVELOCALELOG: '/locale/log/archive',
+    REFRESHLOCALELOG: '/locale/log/refresh',
 };
 
 module.exports = {

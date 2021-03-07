@@ -11,10 +11,29 @@ const get = async (collectionName, filters = {}, projection = {}) => {
         }, (err, db) => {
             if (err) reject(err);
             var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName).find(filters, { projection }).sort({ createdAt: -1 }).toArray((err, documents) => {
+            dbo.collection(collectionName).find(filters, { projection }).sort({ createdOn: -1 }).toArray((err, documents) => {
                 if (err) reject(err);
                 else {
                     resolve(documents);
+                }
+                db.close();
+            });
+        });
+    }).then(d => d);
+}
+const count = async (collectionName, filters = {}) => {
+    // projection._id = 0;
+    return new Promise((resolve, reject) => {
+        MongoClient.connect(dbHost, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        }, (err, db) => {
+            if (err) reject(err);
+            var dbo = db.db("ECOM-CONSUMER");
+            dbo.collection(collectionName).find(filters).count((err, count) => {
+                if (err) reject(err);
+                else {
+                    resolve(count);
                 }
                 db.close();
             });
@@ -91,15 +110,15 @@ const inactivate = async (collectionName, filters) => {
             }, (err, db) => {
                 if (err) reject(err);
                 var dbo = db.db("ECOM-CONSUMER");
-                dbo.collection(collectionName).findOneAndUpdate(filters, { $set: { active: false } },
-                    (err, res) => {
-                        if (err) reject(err);
-                        console.log(`Item Inactivated: ${collectionName}`);
+                dbo.collection(collectionName).updateOne(filters,
+                    { $set: { active: false } },
+                    // { upsert: true },
+                    function (err, res) {
+                        if (err) throw err;
+                        // console.log("1 document updated");
                         db.close();
                         resolve(true);
-
-                    }
-                );
+                    });
             });
         }).then(d => d);
     } else {
@@ -107,4 +126,4 @@ const inactivate = async (collectionName, filters) => {
     }
 }
 
-module.exports = { get, post, update, empty, inactivate };
+module.exports = { get, count, post, update, empty, inactivate };

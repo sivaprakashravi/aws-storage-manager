@@ -6,9 +6,9 @@ const routes = require('./routes');
 const { storage } = require('./constants/defaults');
 const { categories, addCategory, emptyAllCategory } = require('./processors/categories-processor');
 const { products, addProduct } = require('./processors/products-processor');
-const { jobs, addJob, updateJobStatus } = require('./processors/jobs-processor');
+const { jobs, addJob, updateJobStatus, stopJob } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
-const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog } = require('./processors/locale-processor');
+const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog, logProdCount } = require('./processors/locale-processor');
 const { port } = storage;
 const moment = require('moment');
 
@@ -59,11 +59,18 @@ routes.get('JOBSTATUS', async (req, res) => {
     })
 });
 
+routes.get('STOPJOB', async (req, res) => {
+    arm(async () => {
+        const stopped = await stopJob(req);
+        res.send(success(stopped));
+    });
+});
+
 routes.post('ADDPRODUCT', async (req, res) => {
     arm(async () => {
         if (req && req.body) {
             const newProduct = req.body;
-            newProduct.createdAt = moment().format();
+            newProduct.createdOn = moment().format();
             const job = await addProduct(newProduct);
             if (job) {
                 res.send(success(job));
@@ -152,10 +159,17 @@ routes.post('ADDLOCALELOG', async (req, res) => {
 
 routes.delete('ARCHIVELOCALELOG', async (req, res) => {
     arm(async () => {
-        if (req && req.query && req.query.logId) {
-            const localeRemoved = await deleteLocaleLog(Number(req.query.logId));
+        if (req && req.query && req.query.log) {
+            const localeRemoved = await deleteLocaleLog(Number(req.query.log));
             res.send(success(localeRemoved));
         }
+    });
+});
+
+routes.get('REFRESHLOCALELOG', async (req, res) => {
+    arm(async () => {
+        const count = await logProdCount(req.query);
+        res.send(success(count));
     });
 });
 
