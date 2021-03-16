@@ -21,8 +21,19 @@ const addLocale = async (data) => {
     data.active = true;
     data.createdBy = 'DEVELOPER';
     data.createdOn = moment().format();
-    data.dealerCharge = Number(data.dealerCharge);
-    data.deliveryCharge = Number(data.deliveryCharge);
+    data.variationFactor = Number(data.variationFactor);
+    data.volumetricWtFactor = Number(data.volumetricWtFactor);
+    data.packingCost = Number(data.packingCost);
+    data.freightUD = Number(data.freightUD);
+    data.freightDC = Number(data.freightDC);
+    data.ccpKG = Number(data.ccpKG);
+    data.ccpHAWB = Number(data.ccpHAWB);
+    data.sensitiveCargo = Number(data.sensitiveCargo);
+    data.handlingCharges = Number(data.handlingCharges);
+    data.markUp = Number(data.markUp);
+    data.beaCukai = Number(data.beaCukai);
+    data.pfComission = Number(data.pfComission);
+    data.ppn = Number(data.ppn);
     const newJob = await post('LOCALE', { insertMode: 'insertOne' }, data);
     return newJob;
 }
@@ -34,28 +45,69 @@ const deleteLocale = async (localeId) => {
     }
 }
 
+const weightType = (string) => {
+    if (string) {
+        const splt = string.split(' ');
+        if (splt.length === 2) {
+            return {
+                weight: Number(splt[0]),
+                type: splt[1]
+            };
+        }
+    }
+}
+
+const weightCalc = ({ weight, type }) => {
+    if (type.indexOf('ounce') > -1) {
+        return weight * 0.0283495;
+    } else if (type.indexOf('pound') > -1) {
+        return weight * 0.453592;
+    } else {
+        return weight;
+    }
+}
+
 const updateProducts = async ({ body }) => {
     if (!body.noSave) {
         await addLocaleLog(body);
     } else {
-        await update('LOCALE-LOGS', { log: body.log }, { status: 'applied' });
+        await update('LOCALE-LOGS', { log: body.log }, { status: 'applied', recursive: body.recursive });
 
     }
     let { category, subCategory } = body;
     const localeObj = await locale(body.locale);
-    const { dealerCharge, deliveryCharge, dealerChargeType, deliveryChargeType } = localeObj[0];
+    const { variationFactor, volumetricWtFactor, packingCost, freightUD, freightDC, ccpKG, ccpHAWB, sensitiveCargo, handlingCharges, markUp, beaCukai, pfComission, ppn } = localeObj[0];
     const filter = { category, subCategory };
     const amznProducts = await get('AMZ-SCRAPPED-DATA', filter);
     let count = 0;
     if (amznProducts && amznProducts.length) {
         const asin = amznProducts.map(a => a.asin);
-        const priceList = amznProducts.map(({ buybox_new_listing_price, asin }) => {
-            buybox_new_listing_price = Number(buybox_new_listing_price);
-            const dealCharge = dealerChargeType === 'value' ? dealerCharge : (buybox_new_listing_price / 100) * dealerCharge;
-            const delvCharge = deliveryChargeType === 'value' ? deliveryCharge : ((buybox_new_listing_price / 100) * deliveryCharge);
+        const priceList = amznProducts.map(({ buybox_new_listing_price, asin, item_dimensions_weight }) => {
+            const prodPrice = Number(buybox_new_listing_price);
+            const wCalc = weightType(item_dimensions_weight);
+            const weight = weightCalc(wCalc);
+            variationFactorCalc = prodPrice * variationFactor;
+            volumetricWtFactorCalc = weight * volumetricWtFactor;
+            freightUDCalc = volumetricWtFactorCalc * freightUD;
+            freightDCCalc = volumetricWtFactorCalc * freightDC;
+            ccpKGCalc = weight * ccpKG;
+            const defs = packingCost + ccpHAWB + sensitiveCargo + handlingCharges;
+            const pbc = defs + variationFactorCalc + volumetricWtFactorCalc + freightUDCalc + freightDCCalc + ccpKGCalc;
+            const markUpCalc = (pbc / 100) * markUp;
+            const pamk = pbc + markUpCalc;
+            const sellingPrice = (pamk * 100) / (100 - 7.5 - 7.5 - 16.766);
+            const beaCukaiCalc = (sellingPrice / 100) * beaCukai;
+            const pfComissionCalc = (sellingPrice / 100) * pfComission;
+            const ppnCalc = (pamk + beaCukaiCalc + pfComissionCalc) * (100 / ppn);
+            const exchange = 16500;
+            const finalPrice = sellingPrice * exchange;
             return {
-                price: Number(buybox_new_listing_price + dealCharge).toFixed(2),
-                deliveryCharge: Number(delvCharge).toFixed(2),
+                markUp: markUpCalc,
+                priceAfterMarkUp: pamk,
+                bEA: beaCukaiCalc,
+                platformComission: pfComissionCalc,
+                ppn: ppnCalc,
+                price: Number(finalPrice).toFixed(2),
                 asin
             }
         });
