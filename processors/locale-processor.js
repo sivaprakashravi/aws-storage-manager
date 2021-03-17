@@ -84,8 +84,11 @@ const updateProducts = async ({ body }) => {
         const asin = amznProducts.map(a => a.asin);
         const priceList = amznProducts.map(({ buybox_new_listing_price, asin, item_dimensions_weight }) => {
             const prodPrice = Number(buybox_new_listing_price);
-            const wCalc = weightType(item_dimensions_weight);
-            const weight = weightCalc(wCalc);
+            let weight = 0;
+            if(item_dimensions_weight) {
+                const wCalc = weightType(item_dimensions_weight);
+                weight = weightCalc(wCalc);
+            }
             variationFactorCalc = prodPrice * variationFactor;
             volumetricWtFactorCalc = weight * volumetricWtFactor;
             freightUDCalc = volumetricWtFactorCalc * freightUD;
