@@ -3,7 +3,7 @@ const _ = require('lodash');
 const { success, error } = require('./utils/handlers');
 const messages = require('./utils/messages');
 const routes = require('./routes');
-const { storage } = require('./constants/defaults');
+const { storage, collectionsToEmpty } = require('./constants/defaults');
 const { categories, addCategory, emptyAllCategory } = require('./processors/categories-processor');
 const { products, addProduct, processedProducts, processedProduct, downloadProcessedProducts } = require('./processors/products-processor');
 const { jobs, addJob, updateJobStatus, stopJob } = require('./processors/jobs-processor');
@@ -11,6 +11,7 @@ const { configuration, setConfiguration, inactivateConfiguration } = require('./
 const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog, logProdCount } = require('./processors/locale-processor');
 const { port } = storage;
 const moment = require('moment');
+const { emptyDB } = require('./processors/db-processor');
 
 const arm = (tryBlock) => {
     try {
@@ -163,6 +164,28 @@ routes.delete('ARCHIVELOCALELOG', async (req, res) => {
             const localeRemoved = await deleteLocaleLog(Number(req.query.log));
             res.send(success(localeRemoved));
         }
+    });
+});
+
+routes.delete('DBEMPTY', async (req, res) => {
+    arm(async () => {
+        const collectionPromises = [];
+        if (collectionsToEmpty && collectionsToEmpty.length) {
+            collectionsToEmpty.forEach(cName => {
+                collectionPromises.push(new Promise(async (resolve, reject) => {
+                    try {
+                        const collectionEmptied = await emptyDB(cName);
+                        resolve(collectionEmptied);
+                        console.log(`${cName} Cleared!`)
+                    } catch (e) {
+                        reject(e);
+                    }
+                }));
+            });
+        }
+        Promise.all(collectionPromises).then(d => {
+            res.send(d);
+        });
     });
 });
 

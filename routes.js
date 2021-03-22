@@ -27,7 +27,8 @@ const routes = {
     ARCHIVELOCALELOG: '/locale/log/archive',
     REFRESHLOCALELOG: '/locale/log/refresh',
     PROCESSEDPRODUCTS: '/product/all',
-    PROCESSEDPRODUCTSDOWNLOAD: '/product/download'
+    PROCESSEDPRODUCTSDOWNLOAD: '/product/download',
+    DBEMPTY: '/db/empty'
 };
 
 module.exports = {
