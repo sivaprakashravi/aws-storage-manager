@@ -7,6 +7,16 @@ const collectionsToEmpty = [
     'AMZ-SCRAPPED-DATA', 'JOBS', 'LOCALE', 'LOCALE-LOGS', 'PRICE', 'PRODUCTS'
 ]
 const storage = {
-    port: 8001
+    port: 8001,
+    scrapPort: 8000
 }
-module.exports = { port, host, login, dbHost, jQ, storage, collectionsToEmpty };
+const downloadProducts = {
+    'label': 'Nama Produk*',
+    'description': 'Deskripsi Produk',
+    'category': 'Kategori Kode*',
+    'item_dimensions_weight': 'Berat* (Gram)',
+    'price':'Harga (Rp)*'
+}
+
+
+module.exports = { port, host, login, dbHost, jQ, storage, collectionsToEmpty, downloadProducts };

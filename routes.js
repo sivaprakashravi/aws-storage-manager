@@ -15,6 +15,7 @@ const routes = {
     STOPJOB: '/job/stop/:id/:scheduleId',
     ADDCATEGORY: '/category/add',
     GETCATEGORY: '/category/all',
+    UPDATECATEGORY: '/category/update',
     GETCONFIGURATION: '/configuration/all',
     SETCONFIGURATION: '/configuration',
     ADDPRODUCT: '/product/add',
@@ -37,6 +38,9 @@ module.exports = {
     },
     post: async (route, callBack) => {
         app.post(routes[route], callBack);
+    },
+    put: async (route, callBack) => {
+        app.put(routes[route], callBack);
     },
     delete: async (route, callBack) => {
         app.delete(routes[route], callBack);

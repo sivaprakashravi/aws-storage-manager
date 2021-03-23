@@ -1,6 +1,7 @@
 const { get, count, post, update, inactivate, empty } = require('./mongo-client-processor');
 const ObjectID = require('mongodb').ObjectID;
 const moment = require('moment');
+const { weightType, weightCalc } = require('./../utils/formatter');
 const _ = require('lodash');
 const locales = async () => {
     const filter = {};
@@ -45,28 +46,6 @@ const deleteLocale = async (localeId) => {
     }
 }
 
-const weightType = (string) => {
-    if (string) {
-        const splt = string.split(' ');
-        if (splt.length === 2) {
-            return {
-                weight: Number(splt[0]),
-                type: splt[1]
-            };
-        }
-    }
-}
-
-const weightCalc = ({ weight, type }) => {
-    if (type.indexOf('ounce') > -1) {
-        return weight * 0.0283495;
-    } else if (type.indexOf('pound') > -1) {
-        return weight * 0.453592;
-    } else {
-        return weight;
-    }
-}
-
 const updateProducts = async ({ body }) => {
     if (!body.noSave) {
         await addLocaleLog(body);
@@ -85,7 +64,7 @@ const updateProducts = async ({ body }) => {
         const priceList = amznProducts.map(({ buybox_new_listing_price, asin, item_dimensions_weight }) => {
             const prodPrice = Number(buybox_new_listing_price);
             let weight = 0;
-            if(item_dimensions_weight) {
+            if (item_dimensions_weight) {
                 const wCalc = weightType(item_dimensions_weight);
                 weight = weightCalc(wCalc);
             }

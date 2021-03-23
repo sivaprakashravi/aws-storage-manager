@@ -1,6 +1,10 @@
-const { get, post, empty } = require('./mongo-client-processor');
+const { get, post, update, empty } = require('./mongo-client-processor');
 const categories = async () => {
     const categoryList = await get('CATEGORIES');
+    return categoryList;
+}
+const category = async (categoryId) => {
+    const categoryList = await get('CATEGORIES', { nId: categoryId });
     return categoryList;
 }
 const addCategory = async (data) => {
@@ -14,4 +18,22 @@ const emptyAllCategory = async () => {
     return emptied;
 }
 
-module.exports = { categories, addCategory, emptyAllCategory };
+const updateCategory = async (category, subCategory, storeId) => {
+    const filter = {
+        nId: category
+    };
+    let values = {
+        storeId
+    }
+    if (subCategory) {
+        filter['subCategory.nId'] = subCategory;
+        values = {
+            "subCategory.$.storeId": storeId
+        }
+    }
+    const emptied = await update('CATEGORIES', filter, values);
+    return emptied;
+
+}
+
+module.exports = { categories, addCategory, updateCategory, emptyAllCategory };

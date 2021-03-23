@@ -4,7 +4,7 @@ const { success, error } = require('./utils/handlers');
 const messages = require('./utils/messages');
 const routes = require('./routes');
 const { storage, collectionsToEmpty } = require('./constants/defaults');
-const { categories, addCategory, emptyAllCategory } = require('./processors/categories-processor');
+const { categories, addCategory, emptyAllCategory, updateCategory } = require('./processors/categories-processor');
 const { products, addProduct, processedProducts, processedProduct, downloadProcessedProducts } = require('./processors/products-processor');
 const { jobs, addJob, updateJobStatus, stopJob } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
@@ -86,6 +86,16 @@ routes.post('ADDCATEGORY', (req, res) => {
         if (removeAllCategories) {
             const categoriesList = await addCategory(req.body);
             res.send(success(categoriesList));
+        }
+    });
+});
+
+routes.put('UPDATECATEGORY', (req, res) => {
+    const { category, subCategory, storeId } = req.query;
+    arm(async () => {
+        if (category) {
+            const updated = await updateCategory(category, subCategory, storeId);
+            res.send(success(updated));
         }
     });
 });
