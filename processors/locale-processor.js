@@ -1,7 +1,8 @@
 const { get, count, post, update, inactivate, empty } = require('./mongo-client-processor');
 const ObjectID = require('mongodb').ObjectID;
 const moment = require('moment');
-const { weightType, weightCalc } = require('./../utils/formatter');
+const { weightType, weightCalc, random } = require('./../utils/formatter');
+const { product } = require('./products-processor');
 const _ = require('lodash');
 const locales = async () => {
     const filter = {};
@@ -44,6 +45,15 @@ const deleteLocale = async (localeId) => {
         const singleJob = await inactivate('LOCALE', { localeId });
         return singleJob;
     }
+}
+
+const newSKU = async () => {
+    let newNumber = random();
+    const isSKUExists = await product({sku: newNumber});
+    if(isSKUExists && isSKUExists.length) {
+        newNumber = await newSKU();
+    }
+    return newNumber;
 }
 
 const updateProducts = async ({ body }) => {
@@ -112,7 +122,21 @@ const updateProducts = async ({ body }) => {
         });
         await Promise.all(deleteProducts).then(async deleted => {
             if (deleted) {
-                await post('PRODUCTS', { insertMode: 'insertMany' }, productsList);
+                const skus = [];
+                productsList.forEach(p => {
+                    skus.push(new Promise(async(resolve, reject) => {
+                        try {
+                            const skuNumber = await newSKU();
+                            p.sku = skuNumber;
+                            resolve();
+                        } catch(e) {
+                            reject(e);
+                        }
+                    }));
+                });
+                Promise.all(skus).then(async () => {
+                    await post('PRODUCTS', { insertMode: 'insertMany' }, productsList);
+                })
             }
         });
         count = amznProducts.length;

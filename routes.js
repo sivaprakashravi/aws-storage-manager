@@ -21,6 +21,7 @@ const routes = {
     GETCONFIGURATION: '/configuration/all',
     SETCONFIGURATION: '/configuration',
     ADDPRODUCT: '/product/add',
+    GETPRODUCT: '/product/:asin',
     LOCALE: '/locale/all',
     ADDLOCALE: '/locale/add',
     DELETELOCALE: '/locale/delete',
@@ -30,8 +31,12 @@ const routes = {
     ARCHIVELOCALELOG: '/locale/log/archive',
     REFRESHLOCALELOG: '/locale/log/refresh',
     PROCESSEDPRODUCTS: '/product/all',
+    ALLPRODUCTS: '/products/all',
     PROCESSEDPRODUCTSDOWNLOAD: '/product/download',
-    DBEMPTY: '/db/empty'
+    DBEMPTY: '/db/empty',
+    ADDNOTIFICATION: '/notification/add',
+    GETNOTIFICATIONS: '/notification/all',
+    NOTIFICATIONCOUNT: '/notification/count'
 };
 
 module.exports = {

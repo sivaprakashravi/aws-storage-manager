@@ -5,13 +5,14 @@ const messages = require('./utils/messages');
 const routes = require('./routes');
 const { storage, collectionsToEmpty } = require('./constants/defaults');
 const { categories, addCategory, newCategory, emptyAllCategory, updateStoreInfo, updateCategory } = require('./processors/categories-processor');
-const { products, addProduct, processedProducts, processedProduct, downloadProcessedProducts } = require('./processors/products-processor');
+const { products, addProduct, processedProducts, localeProducts, downloadProcessedProducts, product } = require('./processors/products-processor');
 const { jobs, addJob, updateJobStatus, stopJob } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
 const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog, logProdCount } = require('./processors/locale-processor');
 const { port } = storage;
 const moment = require('moment');
 const { emptyDB } = require('./processors/db-processor');
+const { addNotification, notifications, notificationsCount } = require('./processors/notification-processor');
 
 const arm = (tryBlock) => {
     try {
@@ -80,6 +81,16 @@ routes.post('ADDPRODUCT', async (req, res) => {
     });
 });
 
+routes.get('GETPRODUCT', async (req, res) => {
+    arm(async () => {
+        const {params} = req;
+        if(params) {            
+            const job = await product({params});
+            res.send(success(job));
+        }
+    });
+});
+
 routes.post('ADDCATEGORY', (req, res) => {
     arm(async () => {
         const removeAllCategories = await emptyAllCategory();
@@ -112,10 +123,10 @@ routes.put('UPDATECATEGORY', (req, res) => {
 });
 
 routes.put('UPDATESTOREINFO', (req, res) => {
-    const { category, subCategory, subCategory1, storeId } = req.query;
+    const { category, subCategory, subCategory1, storeId, categoryCode } = req.query;
     arm(async () => {
         if (category) {
-            const updated = await updateStoreInfo(category, subCategory, subCategory1, storeId);
+            const updated = await updateStoreInfo(category, subCategory, subCategory1, storeId, categoryCode);
             res.send(success(updated));
         }
     });
@@ -234,10 +245,38 @@ routes.get('PROCESSEDPRODUCTS', async (req, res) => {
     });
 });
 
+routes.get('ALLPRODUCTS', async (req, res) => {
+    arm(async () => {
+        const pdts = await localeProducts(req.body);
+        res.send(success(pdts));
+    });
+})
+
 routes.get('PROCESSEDPRODUCTSDOWNLOAD', async (req, res) => {
     arm(async () => {
         const pdts = await downloadProcessedProducts(req);
         res.send(success(pdts));
+    });
+});
+
+routes.get('GETNOTIFICATIONS', async (req, res) => {
+    arm(async () => {
+        const pdts = await notifications(req.body);
+        res.send(success(pdts));
+    });
+});
+
+routes.get('NOTIFICATIONCOUNT', async (req, res) => {
+    arm(async () => {
+        const pdts = await notificationsCount();
+        res.send(success(pdts));
+    });
+});
+
+routes.post('ADDNOTIFICATION', async (req, res) => {
+    arm(async () => {
+        const config = await addNotification(req.body);
+        res.send(success(config));
     });
 });
 

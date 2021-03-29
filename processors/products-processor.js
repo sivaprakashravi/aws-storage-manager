@@ -2,7 +2,7 @@ const { get, post, count, empty, getSync } = require('./mongo-client-processor')
 const moment = require('moment');
 const { ObjectID } = require('mongodb');
 const _ = require('lodash');
-const { weightType, weightCalc, random } = require('../utils/formatter');
+const { weightType, weightCalc } = require('../utils/formatter');
 const { downloadProducts, storage } = require('../constants/defaults');
 const products = async () => {
     const productList = await get('AMZ-SCRAPPED-DATA');
@@ -12,6 +12,11 @@ const products = async () => {
 const product = async (filter) => {
     const existingProduct = await get('AMZ-SCRAPPED-DATA', filter);
     return existingProduct;
+}
+
+const localeProducts = async (filter = {}) => {
+    const prods = await get('PRODUCTS', filter);
+    return prods;
 }
 const processedProducts = async (req) => {
     const { pageNo, category, subCategory, limit } = req.query;
@@ -27,7 +32,7 @@ const processedProducts = async (req) => {
     });
 }
 const downloadProcessedProducts = async (req) => {
-    const { pageNo, category, subCategory, storeId, limit } = req.query;
+    const { pageNo, category, subCategory, storeId, categoryCode, limit } = req.query;
     const filters = { category, subCategory };
     const length = await count('PRODUCTS', filters);
     const productList = await get('PRODUCTS', filters);
@@ -53,6 +58,9 @@ const downloadProcessedProducts = async (req) => {
                 })
 
             }
+            if(categoryCode) {
+                mapped['Kategori Kode*'] = categoryCode;
+            }
             mapped['Minimum Pemesanan *'] = '1';
             mapped['Nomor Etalase'] = storeId;
             mapped['Waktu Proses Preorder'] = '';
@@ -67,15 +75,6 @@ const downloadProcessedProducts = async (req) => {
     });
 }
 
-const newSKU = async () => {
-    let newSKU = random();
-    const isSKUExists = await product({sku: newSKU});
-    if(isSKUExists && isSKUExists.length) {
-        newSKU = await newSKU();
-    }
-    return newSKU;
-}
-
 const processedProduct = async (asin) => {
     const existingProduct = await get('PRODUCTS', { asin });
     return existingProduct;
@@ -85,11 +84,8 @@ const addProduct = async (data) => {
     const isExists = await product({asin: data.asin});
     if (isExists && isExists.length) {
         await empty('AMZ-SCRAPPED-DATA', { asin: data.asin });
-        data.sku = isExists.sku;
         data.history = isExists[0].history ? isExists[0].history : [];
         data.history.push(moment().format());
-    } else {
-        data.sku = newSKU();
     }
     // const productInsert = await post('PRODUCTS', { insertMode: 'insertOne' }, data);
     const addtoAmazon = await addScrapAmz(data);
@@ -101,4 +97,4 @@ const addScrapAmz = async (data) => {
     return scrap;
 }
 
-module.exports = { products, addProduct, processedProducts, processedProduct, downloadProcessedProducts };
+module.exports = { products, product, addProduct, processedProducts, processedProduct, downloadProcessedProducts, localeProducts };

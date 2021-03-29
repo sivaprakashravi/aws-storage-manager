@@ -1,8 +1,10 @@
 const { get, post, update, empty } = require('./mongo-client-processor');
 const moment = require('moment');
+const _ = require('lodash');
 const { ObjectID } = require('bson');
 const categories = async () => {
-    const categoryList = await get('CATEGORIES');
+    let categoryList = await get('CATEGORIES');
+    categoryList = _.orderBy(categoryList, ['name'],['asc']);
     return categoryList;
 }
 const category = async (categoryId) => {
@@ -50,7 +52,7 @@ const updateCategory = async({name, nId, _id, subCategory}) => {
 
 }
 
-const updateStoreInfo = async (category, subCategory, subCategory1, storeId) => {
+const updateStoreInfo = async (category, subCategory, subCategory1, storeId, categoryCode) => {
     let filter = {
         nId: category
     };
@@ -60,7 +62,8 @@ const updateStoreInfo = async (category, subCategory, subCategory1, storeId) => 
     if (subCategory) {
         filter['subCategory.nId'] = subCategory;
         values = {
-            "subCategory.$.storeId": storeId
+            "subCategory.$.storeId": storeId,
+            "subCategory.$.categoryCode": categoryCode
         }
     }
     if (subCategory1) {
@@ -70,7 +73,8 @@ const updateStoreInfo = async (category, subCategory, subCategory1, storeId) => 
         const sc = cat[0].subCategory.find(f => f.nId === subCategory);    
         const scsIndex = sc.subCategory.findIndex(sf => sf.nId === subCategory1);   
         values = {
-            [`subCategory.${index}.subCategory.${scsIndex}.storeId`]: storeId
+            [`subCategory.${index}.subCategory.${scsIndex}.storeId`]: storeId,
+            [`subCategory.${index}.subCategory.${scsIndex}.categoryCode`]: categoryCode
         }
     }
     const emptied = await update('CATEGORIES', filter, values);
