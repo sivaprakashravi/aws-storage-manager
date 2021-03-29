@@ -2,15 +2,15 @@ const { get, post, count, empty, getSync } = require('./mongo-client-processor')
 const moment = require('moment');
 const { ObjectID } = require('mongodb');
 const _ = require('lodash');
-const { weightType, weightCalc } = require('../utils/formatter');
+const { weightType, weightCalc, random } = require('../utils/formatter');
 const { downloadProducts, storage } = require('../constants/defaults');
 const products = async () => {
     const productList = await get('AMZ-SCRAPPED-DATA');
     return productList;
 }
 
-const product = async (asin) => {
-    const existingProduct = await get('AMZ-SCRAPPED-DATA', { asin });
+const product = async (filter) => {
+    const existingProduct = await get('AMZ-SCRAPPED-DATA', filter);
     return existingProduct;
 }
 const processedProducts = async (req) => {
@@ -67,17 +67,29 @@ const downloadProcessedProducts = async (req) => {
     });
 }
 
+const newSKU = async () => {
+    let newSKU = random();
+    const isSKUExists = await product({sku: newSKU});
+    if(isSKUExists && isSKUExists.length) {
+        newSKU = await newSKU();
+    }
+    return newSKU;
+}
+
 const processedProduct = async (asin) => {
     const existingProduct = await get('PRODUCTS', { asin });
     return existingProduct;
 }
 
 const addProduct = async (data) => {
-    const isExists = await product(data.asin);
+    const isExists = await product({asin: data.asin});
     if (isExists && isExists.length) {
         await empty('AMZ-SCRAPPED-DATA', { asin: data.asin });
+        data.sku = isExists.sku;
         data.history = isExists[0].history ? isExists[0].history : [];
         data.history.push(moment().format());
+    } else {
+        data.sku = newSKU();
     }
     // const productInsert = await post('PRODUCTS', { insertMode: 'insertOne' }, data);
     const addtoAmazon = await addScrapAmz(data);

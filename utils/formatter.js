@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const removeSplChar = (val, isNumber) => {
     val = val ? val.replace(/[^\w\s]/gi, '') : null;
     if (isNumber && val) {
@@ -28,5 +29,12 @@ const weightCalc = ({ weight, type }) => {
     }
 }
 
+const random = () => {
+    const min = 1000000000;
+    const max = 9999999999;
+    const rand = _.random(min, max);
+    return rand;
+}
+
 const removeBreaks = (txt) => txt.replace(/(\r\n|\n|\r)/gm, "");
-module.exports = { removeSplChar, removeBreaks, weightType, weightCalc };
+module.exports = { removeSplChar, removeBreaks, weightType, weightCalc, random };
