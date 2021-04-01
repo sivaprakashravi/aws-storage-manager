@@ -266,6 +266,13 @@ routes.get('GETNOTIFICATIONS', async (req, res) => {
     });
 });
 
+routes.get('NOTIFICATIONUPDATEALL', async (req, res) => {
+    arm(async () => {
+        const pdts = await updateAllNotifications();
+        res.send(success(pdts));
+    });
+});
+
 routes.get('NOTIFICATIONCOUNT', async (req, res) => {
     arm(async () => {
         const pdts = await notificationsCount();

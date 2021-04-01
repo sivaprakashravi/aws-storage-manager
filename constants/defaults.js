@@ -4,7 +4,7 @@ const login = `${host}ap/signin?openid.pape.max_auth_age=0&openid.return_to=http
 const dbHost = "mongodb://localhost:27017/";
 const jQ = "./libs/jquery-3.5.1.slim.min.js";
 const collectionsToEmpty = [
-    'AMZ-SCRAPPED-DATA', 'JOBS', 'LOCALE', 'LOCALE-LOGS', 'PRICE', 'PRODUCTS'
+    'AMZ-SCRAPPED-DATA', 'JOBS', 'LOCALE', 'LOCALE-LOGS', 'PRICE', 'PRODUCTS', 'NOTIFICATIONS'
 ]
 const storage = {
     port: 8001,

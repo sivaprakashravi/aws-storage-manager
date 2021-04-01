@@ -30,13 +30,14 @@ const routes = {
     ADDLOCALELOG: '/locale/log/add',
     ARCHIVELOCALELOG: '/locale/log/archive',
     REFRESHLOCALELOG: '/locale/log/refresh',
-    PROCESSEDPRODUCTS: '/product/all',
+    PROCESSEDPRODUCTS: '/products/processed/all',
     ALLPRODUCTS: '/products/all',
     PROCESSEDPRODUCTSDOWNLOAD: '/product/download',
     DBEMPTY: '/db/empty',
     ADDNOTIFICATION: '/notification/add',
     GETNOTIFICATIONS: '/notification/all',
-    NOTIFICATIONCOUNT: '/notification/count'
+    NOTIFICATIONCOUNT: '/notification/count',
+    NOTIFICATIONUPDATEALL: '/notification/update/all'
 };
 
 module.exports = {

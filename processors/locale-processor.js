@@ -2,7 +2,7 @@ const { get, count, post, update, inactivate, empty } = require('./mongo-client-
 const ObjectID = require('mongodb').ObjectID;
 const moment = require('moment');
 const { weightType, weightCalc, random } = require('./../utils/formatter');
-const { product } = require('./products-processor');
+const { product, localeProducts } = require('./products-processor');
 const _ = require('lodash');
 const locales = async () => {
     const filter = {};
@@ -49,8 +49,8 @@ const deleteLocale = async (localeId) => {
 
 const newSKU = async () => {
     let newNumber = random();
-    const isSKUExists = await product({sku: newNumber});
-    if(isSKUExists && isSKUExists.length) {
+    const isSKUExists = await product({ sku: newNumber });
+    if (isSKUExists && isSKUExists.length) {
         newNumber = await newSKU();
     }
     return newNumber;
@@ -65,50 +65,19 @@ const updateProducts = async ({ body }) => {
     }
     let { category, subCategory } = body;
     const localeObj = await locale(body.locale);
-    const { variationFactor, volumetricWtFactor, packingCost, freightUD, freightDC, ccpKG, ccpHAWB, sensitiveCargo, handlingCharges, markUp, beaCukai, pfComission, ppn } = localeObj[0];
     const filter = { category, subCategory };
     const amznProducts = await get('AMZ-SCRAPPED-DATA', filter);
     let count = 0;
     if (amznProducts && amznProducts.length) {
+        const localeJob = localeObj[0];
+        const priceList = await priceUpdate(amznProducts, localeJob);
         const asin = amznProducts.map(a => a.asin);
-        const priceList = amznProducts.map(({ buybox_new_listing_price, asin, item_dimensions_weight }) => {
-            const prodPrice = Number(buybox_new_listing_price);
-            let weight = 0;
-            if (item_dimensions_weight) {
-                const wCalc = weightType(item_dimensions_weight);
-                weight = weightCalc(wCalc);
-            }
-            variationFactorCalc = prodPrice * variationFactor;
-            volumetricWtFactorCalc = weight * volumetricWtFactor;
-            freightUDCalc = volumetricWtFactorCalc * freightUD;
-            freightDCCalc = volumetricWtFactorCalc * freightDC;
-            ccpKGCalc = weight * ccpKG;
-            const defs = packingCost + ccpHAWB + sensitiveCargo + handlingCharges;
-            const pbc = defs + variationFactorCalc + volumetricWtFactorCalc + freightUDCalc + freightDCCalc + ccpKGCalc;
-            const markUpCalc = (pbc / 100) * markUp;
-            const pamk = pbc + markUpCalc;
-            const sellingPrice = (pamk * 100) / (100 - 7.5 - 7.5 - 16.766);
-            const beaCukaiCalc = (sellingPrice / 100) * beaCukai;
-            const pfComissionCalc = (sellingPrice / 100) * pfComission;
-            const ppnCalc = (pamk + beaCukaiCalc + pfComissionCalc) * (100 / ppn);
-            const exchange = 16500;
-            const finalPrice = sellingPrice * exchange;
-            return {
-                markUp: markUpCalc,
-                priceAfterMarkUp: pamk,
-                bEA: beaCukaiCalc,
-                platformComission: pfComissionCalc,
-                ppn: ppnCalc,
-                price: Number(finalPrice).toFixed(2),
-                asin
-            }
-        });
         const productsList = amznProducts.map(amzn => {
-            const product = _.omit(amzn, ['_id', 'buybox_new_landed_price', 'buybox_new_listing_price', 'buybox_new_shipping_price']);
+            const product = _.omit(amzn, ['_id', 'buybox_new_landed_price', 'buybox_new_listing_price', 'buybox_new_shipping_price', 'salePrice', 'shippingPrice']);
             return product;
         });
         const deletePrice = asin.map(async a => {
-            const deleted = await empty('PRICE', { asin: a });
+            const deleted = await update('PRICE', { asin: a }, {active: false});
             return deleted;
         });
         await Promise.all(deletePrice).then(async deleted => {
@@ -117,19 +86,27 @@ const updateProducts = async ({ body }) => {
             }
         });
         const deleteProducts = asin.map(async a => {
+            const prod = await localeProducts({ asin: a });
             const deleted = await empty('PRODUCTS', { asin: a });
-            return deleted;
+            if (deleted) {
+                return { asin: a, sku: prod.sku };
+            }
         });
         await Promise.all(deleteProducts).then(async deleted => {
             if (deleted) {
                 const skus = [];
                 productsList.forEach(p => {
-                    skus.push(new Promise(async(resolve, reject) => {
+                    skus.push(new Promise(async (resolve, reject) => {
                         try {
-                            const skuNumber = await newSKU();
-                            p.sku = skuNumber;
+                            const existingSKU = deleted.find(d => d.asin === p.asin);
+                            if (!existingSKU) {
+                                const skuNumber = await newSKU();
+                                p.sku = skuNumber;
+                            } else {
+                                p.sku = existingSKU.sku;
+                            }
                             resolve();
-                        } catch(e) {
+                        } catch (e) {
                             reject(e);
                         }
                     }));
@@ -190,4 +167,43 @@ const deleteLocaleLog = async (log) => {
     }
 }
 
-module.exports = { locales, locale, addLocale, deleteLocale, updateProducts, localeLogs, localeLog, addLocaleLog, deleteLocaleLog, logProdCount };
+const priceUpdate = async (amznProducts, localeJob) => {
+    const { localeId, variationFactor, volumetricWtFactor, packingCost, freightUD, freightDC, ccpKG, ccpHAWB, sensitiveCargo, handlingCharges, markUp, beaCukai, pfComission, ppn } = localeJob;
+    const priceList = amznProducts.map(({ salePrice, shippingPrice, asin, item_dimensions_weight }) => {
+        const prodPrice = (salePrice ? Number(salePrice) : 0) + (shippingPrice ?  Number(shippingPrice) : 0);
+        let weight = 0;
+        if (item_dimensions_weight) {
+            const wCalc = weightType(item_dimensions_weight);
+            weight = weightCalc(wCalc);
+        }
+        variationFactorCalc = prodPrice * variationFactor;
+        volumetricWtFactorCalc = weight * volumetricWtFactor;
+        freightUDCalc = volumetricWtFactorCalc * freightUD;
+        freightDCCalc = volumetricWtFactorCalc * freightDC;
+        ccpKGCalc = weight * ccpKG;
+        const defs = packingCost + ccpHAWB + sensitiveCargo + handlingCharges;
+        const pbc = defs + variationFactorCalc + volumetricWtFactorCalc + freightUDCalc + freightDCCalc + ccpKGCalc;
+        const markUpCalc = (pbc / 100) * markUp;
+        const pamk = pbc + markUpCalc;
+        const sellingPrice = (pamk * 100) / (100 - 7.5 - 7.5 - 16.766);
+        const beaCukaiCalc = (sellingPrice / 100) * beaCukai;
+        const pfComissionCalc = (sellingPrice / 100) * pfComission;
+        const ppnCalc = (pamk + beaCukaiCalc + pfComissionCalc) * (100 / ppn);
+        const exchange = 16500;
+        const finalPrice = sellingPrice * exchange;
+        return {
+            markUp: markUpCalc,
+            priceAfterMarkUp: pamk,
+            bEA: beaCukaiCalc,
+            platformComission: pfComissionCalc,
+            ppn: ppnCalc,
+            price: Number(finalPrice).toFixed(2),
+            asin,
+            localeId,
+            active: true
+        };
+    });
+    return priceList;
+}
+
+module.exports = { locales, locale, addLocale, deleteLocale, updateProducts, localeLogs, localeLog, addLocaleLog, deleteLocaleLog, logProdCount, priceUpdate };

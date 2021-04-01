@@ -1,12 +1,36 @@
-const { get, post, count, getSync } = require('./mongo-client-processor');
+const { get, post, update, count, getSync } = require('./mongo-client-processor');
 const ObjectID = require('mongodb').ObjectID;
 const moment = require('moment');
+const _ = require('lodash');
+const { priceUpdate, locale } = require('./locale-processor');
 const notifications = async (body) => {
     const filters = { active: true };
     const { pageNo, limit } = body;
     const length = await count('NOTIFICATIONS', filters);
     const allNotifications = await getSync('NOTIFICATIONS', filters, {}, pageNo, limit);
-    return { notifications: allNotifications, total: length };
+    const asins = allNotifications.map(({ asin }) => {
+        return { asin };
+    });
+    const getProds = await get('PRODUCTS', { $or: asins });
+    const products = getProds.map(({ sku, asin }) => {
+        return { sku, asin };
+    });
+    const merged = _.merge(allNotifications, products);
+    return { notifications: merged, total: length };
+}
+
+const updateAllNotifications = async () => {
+    const filter = { active: true };
+    const values = { filter: false };
+    const notifications = await get('NOTIFICATIONS');
+    notifications.forEach(async (n) => {
+        const localeApplied = await locale({asin: n.asin, active: true});
+        await update('PRICE', { asin: n.asin }, {active: false});
+        const newPrice = await priceUpdate(n, localeApplied[0]);
+        const newUpdate = await post('PRICE', { insertMode: 'insertOne' }, newPrice);
+        return newUpdate;
+    })
+    const emptied = await update('NOTIFICATIONS', filter, values);
 }
 
 const notificationsCount = async () => {
@@ -30,4 +54,4 @@ const addNotification = async (data) => {
     return newJob;
 }
 
-module.exports = { notification, notificationsCount, notifications, addNotification };
+module.exports = { notification, notificationsCount, notifications, addNotification, updateAllNotifications };
