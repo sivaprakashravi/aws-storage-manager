@@ -13,6 +13,8 @@ const { port } = storage;
 const moment = require('moment');
 const { emptyDB } = require('./processors/db-processor');
 const { addNotification, notifications, notificationsCount } = require('./processors/notification-processor');
+const { orders, orderStatuses } = require('./processors/orders.processor');
+const { addUser, loginUser, addRole, getUsers, getRoles, updateRole, deleteRole } = require('./processors/user-processor');
 
 const arm = (tryBlock) => {
     try {
@@ -141,9 +143,9 @@ routes.get('GETCATEGORY', async (req, res) => {
 
 routes.post('SETCONFIGURATION', (req, res) => {
     arm(async () => {
-        const removeAllCategories = await inactivateConfiguration();
+        const removeAllCategories = await inactivateConfiguration('CONFIGURATION');
         if (removeAllCategories && req.body) {
-            const config = await setConfiguration(req.body);
+            const config = await setConfiguration('CONFIGURATION', req.body);
             res.send(success(config));
         }
     });
@@ -151,7 +153,24 @@ routes.post('SETCONFIGURATION', (req, res) => {
 
 routes.get('GETCONFIGURATION', async (req, res) => {
     arm(async () => {
-        const config = await configuration();
+        const config = await configuration('CONFIGURATION');
+        res.send(success(config));
+    });
+});
+
+routes.post('SETUSERCONFIGURATION', (req, res) => {
+    arm(async () => {
+        const removeAllCategories = await inactivateConfiguration('USERCONFIGURATION');
+        if (removeAllCategories && req.body) {
+            const config = await setConfiguration('USERCONFIGURATION', req.body);
+            res.send(success(config));
+        }
+    });
+});
+
+routes.get('GETUSERCONFIGURATION', async (req, res) => {
+    arm(async () => {
+        const config = await configuration('USERCONFIGURATION');
         res.send(success(config));
     });
 });
@@ -284,6 +303,71 @@ routes.post('ADDNOTIFICATION', async (req, res) => {
     arm(async () => {
         const config = await addNotification(req.body);
         res.send(success(config));
+    });
+});
+
+routes.get('GETORDERS', async (req, res) => {
+    arm(async () => {
+        const pdts = await orders();
+        res.send(success(pdts));
+    });
+});
+
+routes.get('ORDERSSTATUSES', async (req, res) => {
+    arm(async () => {
+        const pdts = await orderStatuses();
+        res.send(success(pdts));
+    });
+});
+
+routes.post('ADDUSER', async (req, res) => {
+    arm(async () => {
+        const config = await addUser(req);
+        res.send(success(config));
+    });
+});
+
+routes.post('LOGINUSER', async (req, res) => {
+    arm(async () => {
+        const config = await loginUser(req);
+        res.send(success(config));
+    });
+});
+
+routes.get('GETUSERS', async (req, res) => {
+    arm(async () => {
+        const pdts = await getUsers();
+        res.send(success(pdts));
+    });
+});
+
+routes.post('ADDROLE', async (req, res) => {
+    arm(async () => {
+        const config = await addRole(req);
+        res.send(success(config));
+    });
+});
+
+routes.get('GETROLES', async (req, res) => {
+    arm(async () => {
+        const pdts = await getRoles();
+        res.send(success(pdts));
+    });
+});
+
+routes.put('ADDROLE', async (req, res) => {
+    arm(async () => {
+        const config = await updateRole(req.body);
+        res.send(success(config));
+    });
+});
+
+routes.delete('DELETEROLE', async (req, res) => {
+    arm(async () => {
+        if (req && req.params && req.params.roleId) {
+            const roleRemoved = await deleteRole(req.params.roleId);
+            res.send(success(roleRemoved));
+        }
     });
 });
 

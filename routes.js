@@ -20,6 +20,8 @@ const routes = {
     UPDATESTOREINFO: '/category/store/update',
     GETCONFIGURATION: '/configuration/all',
     SETCONFIGURATION: '/configuration',
+    GETUSERCONFIGURATION: '/configuration/user/all',
+    SETUSERCONFIGURATION: '/configuration/user',
     ADDPRODUCT: '/product/add',
     GETPRODUCT: '/product/:asin',
     LOCALE: '/locale/all',
@@ -37,7 +39,16 @@ const routes = {
     ADDNOTIFICATION: '/notification/add',
     GETNOTIFICATIONS: '/notification/all',
     NOTIFICATIONCOUNT: '/notification/count',
-    NOTIFICATIONUPDATEALL: '/notification/update/all'
+    NOTIFICATIONUPDATEALL: '/notification/update/all',
+    GETORDERS: '/orders/all',
+    ORDERSSTATUSES: '/orders/statuses',
+    ADDUSER: '/user/add',
+    GETUSERS: '/user/all',
+    LOGINUSER: '/user/login',
+    ADDROLE: '/user/role/add',
+    DELETEROLE: '/user/role/delete/:roleId',
+    GETROLES: '/user/role/all',
+    UPDATEROLES: '/user/role/update'
 };
 
 module.exports = {
