@@ -85,9 +85,9 @@ routes.post('ADDPRODUCT', async (req, res) => {
 
 routes.get('GETPRODUCT', async (req, res) => {
     arm(async () => {
-        const {params} = req;
-        if(params) {            
-            const job = await product({params});
+        const { params } = req;
+        if (params) {
+            const job = await product({ params });
             res.send(success(job));
         }
     });
@@ -323,14 +323,22 @@ routes.get('ORDERSSTATUSES', async (req, res) => {
 routes.post('ADDUSER', async (req, res) => {
     arm(async () => {
         const config = await addUser(req);
-        res.send(success(config));
+        if (config.status === 200) {
+            res.send(success(config));
+        } else {
+            res.status(config.status).send(error(config.message));
+        }
     });
 });
 
 routes.post('LOGINUSER', async (req, res) => {
     arm(async () => {
         const config = await loginUser(req);
-        res.send(success(config));
+        if (config.status === 200) {
+            res.send(success(config));
+        } else {
+            res.status(config.status).send(error(config.message));
+        }
     });
 });
 

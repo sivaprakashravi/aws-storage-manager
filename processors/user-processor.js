@@ -7,22 +7,26 @@ const dataList = async (collectionName) => {
     return list;
 }
 const addInCognito = async (user) => {
-    try {        
+    try {
         const add = await axios.post('http://localhost:8002/user/register', user);
         return add;
-    } catch(e) {
-        console.log(e);
+    } catch (e) {
+        const { status, data } = e.response;
+        return { status, data };
     }
 }
 
 const addUser = async (req) => {
     if (req.body) {
         const addCognito = await addInCognito(req.body);
-        if (addCognito) {
+        if (addCognito && !addCognito.status === 500) {
             const user = req.body;
             user.role = user.role.roleId;
             const addinDB = await post('USERS', { insertMode: 'insertOne' }, req.body);
             return addinDB;
+        } else {
+            const { status, data } = addCognito;
+            return { status, message: data.message };
         }
     }
 }
@@ -33,14 +37,12 @@ const getUsers = async (filter = {}) => {
 }
 
 const loginUser = async (req) => {
-    const add = await axios.post('http://localhost:8002/user/login', req.body);
-    if (add.status === 200) {
+    try {
+        const add = await axios.post('http://localhost:8002/user/login', req.body);
         return add.data;
-    } else {
-        return {
-            status: add.status,
-            message: add.statusText
-        }
+    } catch (e) {
+        const { status, data } = e.response;
+        return { status, message: data.message };
     }
 }
 
