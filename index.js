@@ -345,7 +345,7 @@ routes.post('LOGINUSER', async (req, res) => {
 routes.post('CONFIRMUSER', async (req, res) => {
     arm(async () => {
         const config = await confirmUser(req);
-        if (config && config.status && config.status !== 200) {
+        if (config && config.status && config.status !== 'success') {
             res.status(config.status).send(error(config.message));
         } else {
             res.send(success(config));
