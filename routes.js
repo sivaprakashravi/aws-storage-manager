@@ -72,7 +72,7 @@ const routes = {
     REFRESHLOCALELOG: '/locale/log/refresh',
     PROCESSEDPRODUCTS: '/products/processed/all',
     ALLPRODUCTS: '/products/all',
-    PROCESSEDPRODUCTSDOWNLOAD: '/product/download',
+    PROCESSEDPRODUCTSDOWNLOAD: '/products/download',
     DBEMPTY: '/db/empty',
     ADDNOTIFICATION: '/notification/add',
     GETNOTIFICATIONS: '/notification/all',

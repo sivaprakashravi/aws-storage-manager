@@ -103,7 +103,7 @@ const updateProducts = async ({ body }) => {
                                 const skuNumber = await newSKU();
                                 p.sku = skuNumber;
                             } else {
-                                p.sku = existingSKU.sku;
+                                p.sku = existingSKU.sku ? existingSKU.sku : await newSKU();
                             }
                             resolve();
                         } catch (e) {
