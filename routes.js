@@ -3,9 +3,47 @@ const cors = require('cors');
 const messages = require('./utils/messages');
 const app = express();
 const bodyParser = require("body-parser");
+const auth = require("./handlers/auth-handler");
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+// Add headers for CORS
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    next();
+});
+
+const unAuthorized = (res) => {
+    res.status(401).send({
+        errorCode: 401,
+        error: 'Unauthorized'
+    });
+};
+
+// app.use(async (req, res) => {
+//     const exceptions = ['/user/login', '/user/confirm', '/user/newVerificationCode'];
+//     try {
+//         if (req && req.path && (exceptions.indexOf(req.path) > - 1)) {
+//             return req.next();
+//         }
+//         else if (req && req.headers && req.headers['authorization']) {
+//             const token = req.headers['authorization'];
+//             req.user = auth.ValidateToken(token);
+//             if (req.user && req.user.valid) {
+//                 return req.next();
+//             } else {
+//                 unAuthorized(res);
+//             }
+//         } else {
+//             unAuthorized(res);
+//         }
+//     } catch (e) {
+//         unAuthorized(res);
+//     }
+// });
 const routes = {
     MASTER: '/',
     ADDJOB: '/job/create',
@@ -45,6 +83,7 @@ const routes = {
     ADDUSER: '/user/add',
     GETUSERS: '/user/all',
     LOGINUSER: '/user/login',
+    GETUSER: '/user/login/:email',
     CONFIRMUSER: '/user/confirm',
     RESENDVERIFCATION: '/user/newVerificationCode',
     ADDROLE: '/user/role/add',

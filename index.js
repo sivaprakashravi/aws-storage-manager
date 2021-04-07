@@ -342,6 +342,17 @@ routes.post('LOGINUSER', async (req, res) => {
     });
 });
 
+routes.get('GETUSER', async (req, res) => {
+    arm(async () => {
+        if (req && req.params && req.params.email) {
+            const pdts = await getUsers({ email: (req.params.email).toUpperCase() });
+            res.send(success(pdts));
+        } else {
+            res.send(success({ message: 'No Email Provided' }));
+        }
+    });
+});
+
 routes.post('CONFIRMUSER', async (req, res) => {
     arm(async () => {
         const config = await confirmUser(req);

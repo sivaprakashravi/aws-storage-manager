@@ -15,6 +15,7 @@
     "moment": "^2.29.1"
   },
   "devDependencies": {
+    "atob": "^2.1.2",
     "axios": "^0.21.1",
     "cors": "^2.8.5",
     "mongodb": "^3.6.4"
