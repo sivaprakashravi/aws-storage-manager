@@ -36,7 +36,7 @@ const addJob = async (data) => {
     return newJob;
 }
 
-const updateJobStatus = async (id, scheduleId, percentage, status) => {
+const updateJobStatus = async (id, scheduleId, percentage, status, address) => {
     const activeJob = await job(id);
     percentage = percentage ? Number(percentage).toFixed(2) : 0;
     scheduleId = Number(scheduleId);
@@ -46,6 +46,7 @@ const updateJobStatus = async (id, scheduleId, percentage, status) => {
         scheduleId
     }, {
         percentage,
+        address,
         status: percentage > 0 ? ((percentage >= 100) ? 'Completed' : 'Running') : status,
         active: percentage > 0 && (percentage >= 100) && !activeJob[0].interval ? false : true
     });

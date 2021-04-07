@@ -45,6 +45,8 @@ const routes = {
     ADDUSER: '/user/add',
     GETUSERS: '/user/all',
     LOGINUSER: '/user/login',
+    CONFIRMUSER: '/user/confirm',
+    RESENDVERIFCATION: '/user/newVerificationCode',
     ADDROLE: '/user/role/add',
     DELETEROLE: '/user/role/delete/:roleId',
     GETROLES: '/user/role/all',

@@ -19,14 +19,14 @@ const addInCognito = async (user) => {
 const addUser = async (req) => {
     if (req.body) {
         const addCognito = await addInCognito(req.body);
-        if (addCognito && !addCognito.status === 500) {
+        if (addCognito && addCognito.status && addCognito.status !== 200) {
+            const { status, data } = addCognito;
+            return { status, message: data.message };
+        } else {
             const user = req.body;
             user.role = user.role.roleId;
             const addinDB = await post('USERS', { insertMode: 'insertOne' }, req.body);
             return addinDB;
-        } else {
-            const { status, data } = addCognito;
-            return { status, message: data.message };
         }
     }
 }
@@ -39,6 +39,26 @@ const getUsers = async (filter = {}) => {
 const loginUser = async (req) => {
     try {
         const add = await axios.post('http://localhost:8002/user/login', req.body);
+        return add.data;
+    } catch (e) {
+        const { status, data } = e.response;
+        return { status, message: data.message };
+    }
+}
+
+const confirmUser = async (req) => {
+    try {
+        const add = await axios.post('http://localhost:8002/user/confirm', req.body);
+        return add.data;
+    } catch (e) {
+        const { status, data } = e.response;
+        return { status, message: data.message };
+    }
+}
+
+const resendConfiration = async (req) => {
+    try {
+        const add = await axios.post('http://localhost:8002/user/newVerificationCode', req.body);
         return add.data;
     } catch (e) {
         const { status, data } = e.response;
@@ -107,4 +127,4 @@ const deleteRole = async (id) => {
     }
 }
 
-module.exports = { addUser, loginUser, addRole, getUsers, getRoles, updateRole, deleteRole };
+module.exports = { addUser, loginUser, confirmUser, resendConfiration, addRole, getUsers, getRoles, updateRole, deleteRole };

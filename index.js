@@ -14,7 +14,7 @@ const moment = require('moment');
 const { emptyDB } = require('./processors/db-processor');
 const { addNotification, notifications, notificationsCount } = require('./processors/notification-processor');
 const { orders, orderStatuses } = require('./processors/orders.processor');
-const { addUser, loginUser, addRole, getUsers, getRoles, updateRole, deleteRole } = require('./processors/user-processor');
+const { addUser, loginUser, addRole, getUsers, getRoles, updateRole, deleteRole, confirmUser, resendConfiration } = require('./processors/user-processor');
 
 const arm = (tryBlock) => {
     try {
@@ -54,8 +54,8 @@ routes.get('JOBSTATUS', async (req, res) => {
     arm(async () => {
         const { id, scheduleId } = req.params;
         if (req && req.params && id && scheduleId) {
-            const { percentage, status } = req.query;
-            const statusResponse = await updateJobStatus(id, scheduleId, percentage, status);
+            const { percentage, status, address } = req.query;
+            const statusResponse = await updateJobStatus(id, scheduleId, percentage, status, address);
             if (statusResponse) {
                 res.send(success(statusResponse));
             }
@@ -323,10 +323,10 @@ routes.get('ORDERSSTATUSES', async (req, res) => {
 routes.post('ADDUSER', async (req, res) => {
     arm(async () => {
         const config = await addUser(req);
-        if (config.status === 200) {
-            res.send(success(config));
-        } else {
+        if (config && config.status && config.status !== 200) {
             res.status(config.status).send(error(config.message));
+        } else {
+            res.send(success(config));
         }
     });
 });
@@ -334,10 +334,32 @@ routes.post('ADDUSER', async (req, res) => {
 routes.post('LOGINUSER', async (req, res) => {
     arm(async () => {
         const config = await loginUser(req);
-        if (config.status === 200) {
-            res.send(success(config));
-        } else {
+        if (config && config.status && config.status !== 200) {
             res.status(config.status).send(error(config.message));
+        } else {
+            res.send(success(config));
+        }
+    });
+});
+
+routes.post('CONFIRMUSER', async (req, res) => {
+    arm(async () => {
+        const config = await confirmUser(req);
+        if (config && config.status && config.status !== 200) {
+            res.status(config.status).send(error(config.message));
+        } else {
+            res.send(success(config));
+        }
+    });
+});
+
+routes.post('RESENDVERIFCATION', async (req, res) => {
+    arm(async () => {
+        const config = await resendConfiration(req);
+        if (config && config.status && config.status !== 'success') {
+            res.status(config.status).send(error(config.message));
+        } else {
+            res.send(success(config));
         }
     });
 });
