@@ -197,7 +197,7 @@ const priceUpdate = async (amznProducts, localeJob) => {
             bEA: beaCukaiCalc,
             platformComission: pfComissionCalc,
             ppn: ppnCalc,
-            price: Number(finalPrice).toFixed(2),
+            price: prodPrice ? Number(finalPrice).toFixed(2) : 0,
             asin,
             localeId,
             active: true
