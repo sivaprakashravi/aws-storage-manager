@@ -103,6 +103,9 @@ const addRole = async (req) => {
 }
 
 const getRoles = async (filter = {}) => {
+    if(filter.roleId) {
+        filter.roleId = Number(filter.roleId);
+    }
     const users = await get('ROLES', filter);
     return users;
 }

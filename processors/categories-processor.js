@@ -49,6 +49,16 @@ const updateCategory = async({name, nId, _id, subCategory}) => {
     await empty('CATEGORIES', {nId: cat[0].nId});
     const updated = await newCategory(values);
     return updated;
+}
+
+const removeCategory = async(id) => {
+    const cat = await category(nId);
+    if(cat && cat.length) {
+        const removed = await empty('CATEGORIES', {nId: cat[0].nId});
+        return removed;
+    } else {
+        return false;
+    }
 
 }
 
@@ -82,4 +92,4 @@ const updateStoreInfo = async (category, subCategory, subCategory1, storeId, cat
 
 }
 
-module.exports = { categories, addCategory, newCategory, updateStoreInfo, updateCategory, emptyAllCategory };
+module.exports = { categories, addCategory, newCategory, updateStoreInfo, removeCategory, updateCategory, emptyAllCategory };

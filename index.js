@@ -377,7 +377,8 @@ routes.post('RESENDVERIFCATION', async (req, res) => {
 
 routes.get('GETUSERS', async (req, res) => {
     arm(async () => {
-        const pdts = await getUsers();
+        let pdts = await getUsers();
+        pdts = pdts.filter(r => r.role !== 1);
         res.send(success(pdts));
     });
 });
@@ -391,7 +392,8 @@ routes.post('ADDROLE', async (req, res) => {
 
 routes.get('GETROLES', async (req, res) => {
     arm(async () => {
-        const pdts = await getRoles();
+        const filter = req.query;
+        const pdts = await getRoles(filter);
         res.send(success(pdts));
     });
 });
