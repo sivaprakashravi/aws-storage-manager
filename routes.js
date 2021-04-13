@@ -54,6 +54,7 @@ const routes = {
     ADDCATEGORY: '/category/add',
     NEWCATEGORY: '/category/new',
     GETCATEGORY: '/category/all',
+    REMOVECATEGORY: '/category/delete',
     UPDATECATEGORY: '/category/update',
     UPDATESTOREINFO: '/category/store/update',
     GETCONFIGURATION: '/configuration/all',

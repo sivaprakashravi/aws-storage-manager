@@ -12,13 +12,17 @@ const category = async (categoryId) => {
     return categoryList;
 }
 const addCategory = async (data) => {
-    await post('CATEGORIES', { insertMode: 'insertMany' }, data);
-    const freshCategories = await categories();
-    return freshCategories;
+    if(data && data.nId) {
+        data.nId = (data.nId).toString();
+        await post('CATEGORIES', { insertMode: 'insertMany' }, data);
+        const freshCategories = await categories();
+        return freshCategories;
+    }
 }
 const newCategory = async (data) => {
     if(data && data.name && data.nId) {
         delete data._id;
+        data.nId = (data.nId).toString();
         const cat = await category(data.nId);
         if(cat && !cat.length) {
             data.treeIndex = 0;
@@ -51,7 +55,7 @@ const updateCategory = async({name, nId, _id, subCategory}) => {
     return updated;
 }
 
-const removeCategory = async(id) => {
+const removeCategory = async(nId) => {
     const cat = await category(nId);
     if(cat && cat.length) {
         const removed = await empty('CATEGORIES', {nId: cat[0].nId});
