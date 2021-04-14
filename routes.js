@@ -47,6 +47,7 @@ const unAuthorized = (res) => {
 const routes = {
     MASTER: '/',
     ADDJOB: '/job/create',
+    DELETEJOB: '/job/delete',
     GETJOBS: '/job/all',
     JOBSTATUS: '/job/status/:id/:scheduleId',
     JOBLOG: '/job/log/:id/:scheduleId',

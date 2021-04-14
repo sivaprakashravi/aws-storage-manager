@@ -1,8 +1,7 @@
-const { get, post, update, inactivate } = require('./mongo-client-processor');
+const { get, post, update, inactivate, empty } = require('./mongo-client-processor');
 const ObjectID = require('mongodb').ObjectID;
 const moment = require('moment');
-const jobs = async ({ query }) => {
-    const filter = query;
+const jobs = async (filter = {}) => {
     // filter.active = true;
     const categoryList = await get('JOBS', filter);
     return categoryList;
@@ -36,6 +35,16 @@ const addJob = async (data) => {
     return newJob;
 }
 
+const deleteJob = async (scheduleId) => {
+    const sJob = await jobs({ scheduleId });
+    if (sJob && sJob.length && sJob[0].status === 'New' && sJob[0].scheduleId === scheduleId) {
+        const removed = await empty('JOBS', { scheduleId });
+        return removed;
+    } else {
+        return false;
+    }
+}
+
 const updateJobStatus = async (id, scheduleId, percentage, status, address) => {
     const activeJob = await job(id);
     percentage = percentage ? Number(percentage).toFixed(2) : 0;
@@ -53,4 +62,4 @@ const updateJobStatus = async (id, scheduleId, percentage, status, address) => {
     return categoryInsert;
 }
 
-module.exports = { jobs, addJob, updateJobStatus, stopJob };
+module.exports = { jobs, addJob, updateJobStatus, stopJob, deleteJob };

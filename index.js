@@ -6,7 +6,7 @@ const routes = require('./routes');
 const { storage, collectionsToEmpty } = require('./constants/defaults');
 const { categories, addCategory, newCategory, emptyAllCategory, updateStoreInfo, updateCategory, removeCategory } = require('./processors/categories-processor');
 const { products, addProduct, processedProducts, localeProducts, downloadProcessedProducts, product } = require('./processors/products-processor');
-const { jobs, addJob, updateJobStatus, stopJob } = require('./processors/jobs-processor');
+const { jobs, addJob, updateJobStatus, stopJob, deleteJob } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
 const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog, logProdCount } = require('./processors/locale-processor');
 const { port } = storage;
@@ -31,7 +31,7 @@ routes.get('MASTER', (req, res) => {
 
 routes.get('GETJOBS', async (req, res) => {
     arm(async () => {
-        const job = await jobs(req);
+        const job = await jobs(req.query);
         if (job) {
             res.send(success(job));
         }
@@ -110,6 +110,21 @@ routes.post('NEWCATEGORY', (req, res) => {
             res.status(409).send(error(categoriesList.message));
         } else {
             res.send(success(categoriesList));
+        }
+    });
+});
+
+routes.delete('DELETEJOB', (req, res) => {
+    arm(async () => {
+        const { scheduleId } = req.query;
+        if(scheduleId) {
+            const id = Number(scheduleId);
+            const deleted = await deleteJob(id);
+            if(deleted) {
+                res.send(success(deleted));
+            } else {
+                res.status(409).send(error({message: 'Something went wrong'}));
+            }
         }
     });
 });

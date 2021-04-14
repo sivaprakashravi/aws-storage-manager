@@ -4,6 +4,7 @@ const { ObjectID } = require('mongodb');
 const _ = require('lodash');
 const { weightType, weightCalc } = require('../utils/formatter');
 const { downloadProducts, storage } = require('../constants/defaults');
+const { configuration } = require('./configuration-processor');
 const products = async () => {
     const productList = await get('AMZ-SCRAPPED-DATA');
     return productList;
@@ -36,6 +37,8 @@ const downloadProcessedProducts = async (req) => {
     const filters = { category, subCategory };
     const length = await count('PRODUCTS', filters);
     const productList = await get('PRODUCTS', filters);
+    const { proxies } = await configuration('CONFIGURATION');
+    const host = proxies.split(',')[0];
     const merged = productList.map(async p => {
         const price = await get('PRICE', { asin: p.asin });
         return _.merge(p, price[0]);
@@ -54,18 +57,18 @@ const downloadProcessedProducts = async (req) => {
             }
             if (i.altImages) {
                 i.altImages.forEach((image, imIndex) => {
-                    mapped[`img${imIndex + 1}`] = `http://localhost:${storage.scrapPort}/amazon/images/${i.asin}/${image}`;
+                    mapped[`img${imIndex + 1}`] = `${host}:${storage.scrapPort}/amazon/images/${i.asin}/${image}`;
                 })
 
             }
-            if(categoryCode) {
+            if (categoryCode) {
                 mapped['Kategori Kode*'] = categoryCode;
             }
             mapped['Minimum Pemesanan *'] = '1';
             mapped['Nomor Etalase'] = storeId;
             mapped['Waktu Proses Preorder'] = '';
             mapped['Kondisi*'] = 'New';
-            mapped['SKU Name'] = '';
+            mapped['SKU Name'] = `SKU${i.sku}`;
             mapped['Status*'] = 'Active';
             mapped['Jumlah Stok*'] = 'New';
             mapped['Asuransi Pengiriman'] = 'Yes';
@@ -81,7 +84,7 @@ const processedProduct = async (asin) => {
 }
 
 const addProduct = async (data) => {
-    const isExists = await product({asin: data.asin});
+    const isExists = await product({ asin: data.asin });
     if (isExists && isExists.length) {
         await empty('AMZ-SCRAPPED-DATA', { asin: data.asin });
         data.history = isExists[0].history ? isExists[0].history : [];
