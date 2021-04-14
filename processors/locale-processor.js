@@ -185,10 +185,10 @@ const priceUpdate = async (amznProducts, localeJob) => {
         const pbc = defs + variationFactorCalc + volumetricWtFactorCalc + freightUDCalc + freightDCCalc + ccpKGCalc;
         const markUpCalc = (pbc / 100) * markUp;
         const pamk = pbc + markUpCalc;
-        const sellingPrice = (pamk * 100) / (100 - 7.5 - 7.5 - 16.766);
+        const sellingPrice = (pamk * 100) / (100 - beaCukai - pfComission - 16.766);
         const beaCukaiCalc = (sellingPrice / 100) * beaCukai;
         const pfComissionCalc = (sellingPrice / 100) * pfComission;
-        const ppnCalc = (pamk + beaCukaiCalc + pfComissionCalc) * (100 / ppn);
+        const ppnCalc = (pamk + beaCukaiCalc + pfComissionCalc) * (ppn / 100);
         const exchange = 16500;
         const finalPrice = sellingPrice * exchange;
         return {
