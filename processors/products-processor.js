@@ -20,8 +20,8 @@ const localeProducts = async (filter = {}) => {
     return prods;
 }
 const processedProducts = async (req) => {
-    const { pageNo, category, subCategory, limit } = req.query;
-    const filters = { category, subCategory };
+    const { pageNo, category, subCategory, subCategory1, limit } = req.query;
+    const filters = { category, subCategory, subCategory1 };
     const length = await count('PRODUCTS', filters);
     const productList = await getSync('PRODUCTS', filters, {}, pageNo, limit);
     const merged = productList.map(async p => {

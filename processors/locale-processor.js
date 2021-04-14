@@ -63,9 +63,9 @@ const updateProducts = async ({ body }) => {
         await update('LOCALE-LOGS', { log: body.log }, { status: 'applied', recursive: body.recursive });
 
     }
-    let { category, subCategory } = body;
+    let { category, subCategory, subCategory1 } = body;
     const localeObj = await locale(body.locale);
-    const filter = { category, subCategory };
+    const filter = { category, subCategory, subCategory1 };
     const amznProducts = await get('AMZ-SCRAPPED-DATA', filter);
     let count = 0;
     if (amznProducts && amznProducts.length) {
