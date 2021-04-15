@@ -47,9 +47,16 @@ const deleteLocale = async (localeId) => {
     }
 }
 
-const newSKU = async () => {
+
+
+const newSKU = async (mapper) => {
+    const id = String(mapper.id ? mapper.id : 0).padStart(2, '0');
+    const amzn = 01;
+    const sku = new RegExp(`^${amzn}${id}`);
+    const lastRecord = await product({sku}, {}, sort, 1);
     let newNumber = random();
-    const isSKUExists = await product({ sku: newNumber });
+    const sort = {$natural:-1};
+    const isSKUExists = await product({sku});
     if (isSKUExists && isSKUExists.length) {
         newNumber = await newSKU();
     }
@@ -100,10 +107,10 @@ const updateProducts = async ({ body }) => {
                         try {
                             const existingSKU = deleted.find(d => d.asin === p.asin);
                             if (!existingSKU) {
-                                const skuNumber = await newSKU();
+                                const skuNumber = await newSKU(p);
                                 p.sku = skuNumber;
                             } else {
-                                p.sku = existingSKU.sku ? existingSKU.sku : await newSKU();
+                                p.sku = existingSKU.sku ? existingSKU.sku : await newSKU(p);
                             }
                             resolve();
                         } catch (e) {
