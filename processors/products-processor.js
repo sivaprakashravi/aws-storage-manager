@@ -10,8 +10,8 @@ const products = async () => {
     return productList;
 }
 
-const product = async (filter) => {
-    const existingProduct = await get('AMZ-SCRAPPED-DATA', filter);
+const product = async (filter, proj = {}, sort = {}, limit) => {
+    const existingProduct = await get('AMZ-SCRAPPED-DATA', filter, proj, sort, limit);
     return existingProduct;
 }
 

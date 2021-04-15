@@ -30,8 +30,8 @@ const weightCalc = ({ weight, type }) => {
 }
 
 const random = () => {
-    const min = 1000000000;
-    const max = 9999999999;
+    const min = 1000;
+    const max = 9999;
     const rand = _.random(min, max);
     return rand;
 }
