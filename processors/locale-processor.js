@@ -47,20 +47,37 @@ const deleteLocale = async (localeId) => {
     }
 }
 
+// const newSKU = async () => {
+//     let newNumber = random();
+//     const isSKUExists = await product({ sku: newNumber });
+//     if (isSKUExists && isSKUExists.length) {
+//         newNumber = await newSKU();
+//     }
+//     return newNumber;
+// }
 
-
-const newSKU = async (mapper) => {
+const newSKU = async (mapper, index, onlyNumber) => {
     const id = String(mapper.id ? mapper.id : 0).padStart(2, '0');
-    const amzn = 01;
-    const sku = new RegExp(`^${amzn}${id}`);
-    const lastRecord = await product({sku}, {}, sort, 1);
-    let newNumber = random();
-    const sort = {$natural:-1};
-    const isSKUExists = await product({sku});
-    if (isSKUExists && isSKUExists.length) {
-        newNumber = await newSKU();
+    const amzn = '01';
+    const sku = new RegExp(`^SKU${amzn}${id}`);
+    const sort = { $natural: -1 };
+    const lastRecord = await product({ sku }, {}, sort, 1);
+    let newNumber = '0001';
+    let val = 0;
+    if (lastRecord && lastRecord[0] && lastRecord[0].sku) {
+        val = Number(lastRecord[0].sku.substr(-4));
     }
-    return newNumber;
+    newNumber = val + 1 + index;
+    newNumber = String(newNumber).padStart(4, '0');
+    const isSKUExists = await product({ sku: `SKU${amzn}${id}${newNumber}` });
+    if (isSKUExists && isSKUExists.length) {
+        newNumber = await newSKU(mapper, index, true);
+    }
+    if(onlyNumber) {
+        return newNumber;
+    } else {
+        return `SKU${amzn}${id}${newNumber}`;
+    }
 }
 
 const updateProducts = async ({ body }) => {
@@ -84,7 +101,7 @@ const updateProducts = async ({ body }) => {
             return product;
         });
         const deletePrice = asin.map(async a => {
-            const deleted = await update('PRICE', { asin: a }, {active: false});
+            const deleted = await update('PRICE', { asin: a }, { active: false });
             return deleted;
         });
         await Promise.all(deletePrice).then(async deleted => {
@@ -102,15 +119,15 @@ const updateProducts = async ({ body }) => {
         await Promise.all(deleteProducts).then(async deleted => {
             if (deleted) {
                 const skus = [];
-                productsList.forEach(p => {
+                productsList.forEach((p, pi) => {
                     skus.push(new Promise(async (resolve, reject) => {
                         try {
                             const existingSKU = deleted.find(d => d.asin === p.asin);
                             if (!existingSKU) {
-                                const skuNumber = await newSKU(p);
+                                const skuNumber = await newSKU(p, pi);
                                 p.sku = skuNumber;
                             } else {
-                                p.sku = existingSKU.sku ? existingSKU.sku : await newSKU(p);
+                                p.sku = existingSKU.sku ? existingSKU.sku : await newSKU(p, pi);
                             }
                             resolve();
                         } catch (e) {
@@ -177,7 +194,7 @@ const deleteLocaleLog = async (log) => {
 const priceUpdate = async (amznProducts, localeJob) => {
     const { localeId, variationFactor, volumetricWtFactor, packingCost, freightUD, freightDC, ccpKG, ccpHAWB, sensitiveCargo, handlingCharges, markUp, beaCukai, pfComission, ppn } = localeJob;
     const priceList = amznProducts.map(({ salePrice, shippingPrice, asin, item_dimensions_weight }) => {
-        const prodPrice = (salePrice ? Number(salePrice) : 0) + (shippingPrice ?  Number(shippingPrice) : 0);
+        const prodPrice = (salePrice ? Number(salePrice) : 0) + (shippingPrice ? Number(shippingPrice) : 0);
         let weight = 0;
         if (item_dimensions_weight) {
             const wCalc = weightType(item_dimensions_weight);

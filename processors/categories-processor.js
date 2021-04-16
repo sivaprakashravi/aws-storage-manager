@@ -12,8 +12,7 @@ const category = async (categoryId) => {
     return categoryList;
 }
 const addCategory = async (data) => {
-    if(data && data.nId) {
-        data.nId = (data.nId).toString();
+    if(data && data.length) {
         await post('CATEGORIES', { insertMode: 'insertMany' }, data);
         const freshCategories = await categories();
         return freshCategories;
