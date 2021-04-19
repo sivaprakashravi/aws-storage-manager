@@ -8,7 +8,7 @@ const { categories, addCategory, newCategory, emptyAllCategory, updateStoreInfo,
 const { products, addProduct, processedProducts, localeProducts, downloadProcessedProducts, product } = require('./processors/products-processor');
 const { jobs, addJob, updateJobStatus, stopJob, deleteJob, pauseJob, recursiveJob, primeJob } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
-const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog, logProdCount } = require('./processors/locale-processor');
+const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog, recursiveLocaleLog, logProdCount } = require('./processors/locale-processor');
 const { port } = storage;
 const moment = require('moment');
 const { emptyDB } = require('./processors/db-processor');
@@ -29,8 +29,8 @@ routes.get('MASTER', (req, res) => {
     res.send(success(null, messages.MASTER));
 });
 
-routes.get('GETJOBS', async (req, res) => {
-    arm(async () => {
+routes.get('GETJOBS', async(req, res) => {
+    arm(async() => {
         const job = await jobs(req.query);
         if (job) {
             res.send(success(job));
@@ -38,8 +38,8 @@ routes.get('GETJOBS', async (req, res) => {
     });
 });
 
-routes.post('ADDJOB', async (req, res) => {
-    arm(async () => {
+routes.post('ADDJOB', async(req, res) => {
+    arm(async() => {
         if (req && req.body) {
             const newJob = req.body;
             const job = await addJob(newJob);
@@ -50,8 +50,8 @@ routes.post('ADDJOB', async (req, res) => {
     });
 });
 
-routes.get('JOBSTATUS', async (req, res) => {
-    arm(async () => {
+routes.get('JOBSTATUS', async(req, res) => {
+    arm(async() => {
         const { id, scheduleId } = req.params;
         if (req && req.params && id && scheduleId) {
             const { percentage, status, address } = req.query;
@@ -63,15 +63,15 @@ routes.get('JOBSTATUS', async (req, res) => {
     })
 });
 
-routes.get('STOPJOB', async (req, res) => {
-    arm(async () => {
+routes.get('STOPJOB', async(req, res) => {
+    arm(async() => {
         const stopped = await stopJob(req);
         res.send(success(stopped));
     });
 });
 
-routes.post('ADDPRODUCT', async (req, res) => {
-    arm(async () => {
+routes.post('ADDPRODUCT', async(req, res) => {
+    arm(async() => {
         if (req && req.body) {
             const newProduct = req.body;
             newProduct.createdOn = moment().format();
@@ -83,8 +83,8 @@ routes.post('ADDPRODUCT', async (req, res) => {
     });
 });
 
-routes.get('GETPRODUCT', async (req, res) => {
-    arm(async () => {
+routes.get('GETPRODUCT', async(req, res) => {
+    arm(async() => {
         const { params } = req;
         if (params) {
             const job = await product({ params });
@@ -94,7 +94,7 @@ routes.get('GETPRODUCT', async (req, res) => {
 });
 
 routes.post('ADDCATEGORY', (req, res) => {
-    arm(async () => {
+    arm(async() => {
         const removeAllCategories = await emptyAllCategory();
         if (removeAllCategories) {
             const categoriesList = await addCategory(req.body);
@@ -104,7 +104,7 @@ routes.post('ADDCATEGORY', (req, res) => {
 });
 
 routes.post('NEWCATEGORY', (req, res) => {
-    arm(async () => {
+    arm(async() => {
         const categoriesList = await newCategory(req.body);
         if (categoriesList && categoriesList.message) {
             res.status(409).send(error(categoriesList.message));
@@ -115,7 +115,7 @@ routes.post('NEWCATEGORY', (req, res) => {
 });
 
 routes.delete('DELETEJOB', (req, res) => {
-    arm(async () => {
+    arm(async() => {
         const { scheduleId } = req.query;
         if (scheduleId) {
             const id = Number(scheduleId);
@@ -130,7 +130,7 @@ routes.delete('DELETEJOB', (req, res) => {
 });
 
 routes.get('PAUSEJOB', (req, res) => {
-    arm(async () => {
+    arm(async() => {
         const { scheduleId } = req.query;
         if (scheduleId) {
             const id = Number(scheduleId);
@@ -147,7 +147,7 @@ routes.get('PAUSEJOB', (req, res) => {
 });
 
 routes.get('PRIMEJOB', (req, res) => {
-    arm(async () => {
+    arm(async() => {
         const { scheduleId } = req.query;
         if (scheduleId) {
             const id = Number(scheduleId);
@@ -164,7 +164,7 @@ routes.get('PRIMEJOB', (req, res) => {
 });
 
 routes.get('RECURSIVEJOB', (req, res) => {
-    arm(async () => {
+    arm(async() => {
         const { scheduleId } = req.query;
         if (scheduleId) {
             const id = Number(scheduleId);
@@ -182,7 +182,7 @@ routes.get('RECURSIVEJOB', (req, res) => {
 
 routes.put('UPDATECATEGORY', (req, res) => {
     const body = req.body;
-    arm(async () => {
+    arm(async() => {
         if (body) {
             const updated = await updateCategory(body);
             res.send(success(updated));
@@ -192,7 +192,7 @@ routes.put('UPDATECATEGORY', (req, res) => {
 
 routes.delete('REMOVECATEGORY', (req, res) => {
     const { nId } = req.query;
-    arm(async () => {
+    arm(async() => {
         if (nId) {
             const updated = await removeCategory(nId);
             res.send(success(updated));
@@ -202,7 +202,7 @@ routes.delete('REMOVECATEGORY', (req, res) => {
 
 routes.put('UPDATESTOREINFO', (req, res) => {
     const { category, subCategory, subCategory1, storeId, categoryCode } = req.query;
-    arm(async () => {
+    arm(async() => {
         if (category) {
             const updated = await updateStoreInfo(category, subCategory, subCategory1, storeId, categoryCode);
             res.send(success(updated));
@@ -210,15 +210,15 @@ routes.put('UPDATESTOREINFO', (req, res) => {
     });
 });
 
-routes.get('GETCATEGORY', async (req, res) => {
-    arm(async () => {
+routes.get('GETCATEGORY', async(req, res) => {
+    arm(async() => {
         const categoriesList = await categories();
         res.send(success(categoriesList));
     });
 });
 
 routes.post('SETCONFIGURATION', (req, res) => {
-    arm(async () => {
+    arm(async() => {
         const removeAllCategories = await inactivateConfiguration('CONFIGURATION');
         if (removeAllCategories && req.body) {
             const config = await setConfiguration('CONFIGURATION', req.body);
@@ -227,15 +227,15 @@ routes.post('SETCONFIGURATION', (req, res) => {
     });
 });
 
-routes.get('GETCONFIGURATION', async (req, res) => {
-    arm(async () => {
+routes.get('GETCONFIGURATION', async(req, res) => {
+    arm(async() => {
         const config = await configuration('CONFIGURATION');
         res.send(success(config));
     });
 });
 
 routes.post('SETUSERCONFIGURATION', (req, res) => {
-    arm(async () => {
+    arm(async() => {
         const removeAllCategories = await inactivateConfiguration('USERCONFIGURATION');
         if (removeAllCategories && req.body) {
             const config = await setConfiguration('USERCONFIGURATION', req.body);
@@ -244,29 +244,29 @@ routes.post('SETUSERCONFIGURATION', (req, res) => {
     });
 });
 
-routes.get('GETUSERCONFIGURATION', async (req, res) => {
-    arm(async () => {
+routes.get('GETUSERCONFIGURATION', async(req, res) => {
+    arm(async() => {
         const config = await configuration('USERCONFIGURATION');
         res.send(success(config));
     });
 });
 
-routes.get('LOCALE', async (req, res) => {
-    arm(async () => {
+routes.get('LOCALE', async(req, res) => {
+    arm(async() => {
         const config = await locales();
         res.send(success(config));
     });
 });
 
-routes.post('ADDLOCALE', async (req, res) => {
-    arm(async () => {
+routes.post('ADDLOCALE', async(req, res) => {
+    arm(async() => {
         const config = await addLocale(req.body);
         res.send(success(config));
     });
 });
 
-routes.delete('DELETELOCALE', async (req, res) => {
-    arm(async () => {
+routes.delete('DELETELOCALE', async(req, res) => {
+    arm(async() => {
         if (req && req.query && req.query.localeId) {
             const localeRemoved = await deleteLocale(Number(req.query.localeId));
             res.send(success(localeRemoved));
@@ -274,29 +274,29 @@ routes.delete('DELETELOCALE', async (req, res) => {
     });
 });
 
-routes.post('UPDATEPRODUCTS', async (req, res) => {
-    arm(async () => {
+routes.post('UPDATEPRODUCTS', async(req, res) => {
+    arm(async() => {
         const config = await updateProducts(req);
         res.send(success(config));
     });
 });
 
-routes.get('LOCALELOGS', async (req, res) => {
-    arm(async () => {
+routes.get('LOCALELOGS', async(req, res) => {
+    arm(async() => {
         const config = await localeLogs();
         res.send(success(config));
     });
 });
 
-routes.post('ADDLOCALELOG', async (req, res) => {
-    arm(async () => {
+routes.post('ADDLOCALELOG', async(req, res) => {
+    arm(async() => {
         const config = await addLocaleLog(req.body);
         res.send(success(config));
     });
 });
 
-routes.delete('ARCHIVELOCALELOG', async (req, res) => {
-    arm(async () => {
+routes.delete('ARCHIVELOCALELOG', async(req, res) => {
+    arm(async() => {
         if (req && req.query && req.query.log) {
             const localeRemoved = await deleteLocaleLog(Number(req.query.log));
             res.send(success(localeRemoved));
@@ -304,12 +304,21 @@ routes.delete('ARCHIVELOCALELOG', async (req, res) => {
     });
 });
 
-routes.delete('DBEMPTY', async (req, res) => {
-    arm(async () => {
+routes.get('RECURSIVELOCALELOG', async(req, res) => {
+    arm(async() => {
+        if (req && req.query && req.query.log) {
+            const recursiveUpdated = await recursiveLocaleLog(Number(req.query.log));
+            res.send(success(recursiveUpdated));
+        }
+    });
+});
+
+routes.delete('DBEMPTY', async(req, res) => {
+    arm(async() => {
         const collectionPromises = [];
         if (collectionsToEmpty && collectionsToEmpty.length) {
             collectionsToEmpty.forEach(cName => {
-                collectionPromises.push(new Promise(async (resolve, reject) => {
+                collectionPromises.push(new Promise(async(resolve, reject) => {
                     try {
                         const collectionEmptied = await emptyDB(cName);
                         resolve(collectionEmptied);
@@ -326,78 +335,78 @@ routes.delete('DBEMPTY', async (req, res) => {
     });
 });
 
-routes.get('REFRESHLOCALELOG', async (req, res) => {
-    arm(async () => {
+routes.get('REFRESHLOCALELOG', async(req, res) => {
+    arm(async() => {
         const count = await logProdCount(req.query);
         res.send(success(count));
     });
 });
 
-routes.get('PROCESSEDPRODUCTS', async (req, res) => {
-    arm(async () => {
+routes.get('PROCESSEDPRODUCTS', async(req, res) => {
+    arm(async() => {
         const pdts = await processedProducts(req);
         res.send(success(pdts));
     });
 });
 
-routes.get('ALLPRODUCTS', async (req, res) => {
-    arm(async () => {
+routes.get('ALLPRODUCTS', async(req, res) => {
+    arm(async() => {
         const pdts = await localeProducts(req.body);
         res.send(success(pdts));
     });
 })
 
-routes.get('PROCESSEDPRODUCTSDOWNLOAD', async (req, res) => {
-    arm(async () => {
+routes.get('PROCESSEDPRODUCTSDOWNLOAD', async(req, res) => {
+    arm(async() => {
         const pdts = await downloadProcessedProducts(req);
         res.send(success(pdts));
     });
 });
 
-routes.get('GETNOTIFICATIONS', async (req, res) => {
-    arm(async () => {
+routes.get('GETNOTIFICATIONS', async(req, res) => {
+    arm(async() => {
         const pdts = await notifications(req.body);
         res.send(success(pdts));
     });
 });
 
-routes.get('NOTIFICATIONUPDATEALL', async (req, res) => {
-    arm(async () => {
+routes.get('NOTIFICATIONUPDATEALL', async(req, res) => {
+    arm(async() => {
         const pdts = await updateAllNotifications();
         res.send(success(pdts));
     });
 });
 
-routes.get('NOTIFICATIONCOUNT', async (req, res) => {
-    arm(async () => {
+routes.get('NOTIFICATIONCOUNT', async(req, res) => {
+    arm(async() => {
         const pdts = await notificationsCount();
         res.send(success(pdts));
     });
 });
 
-routes.post('ADDNOTIFICATION', async (req, res) => {
-    arm(async () => {
+routes.post('ADDNOTIFICATION', async(req, res) => {
+    arm(async() => {
         const config = await addNotification(req.body);
         res.send(success(config));
     });
 });
 
-routes.get('GETORDERS', async (req, res) => {
-    arm(async () => {
+routes.get('GETORDERS', async(req, res) => {
+    arm(async() => {
         const pdts = await orders();
         res.send(success(pdts));
     });
 });
 
-routes.get('ORDERSSTATUSES', async (req, res) => {
-    arm(async () => {
+routes.get('ORDERSSTATUSES', async(req, res) => {
+    arm(async() => {
         const pdts = await orderStatuses();
         res.send(success(pdts));
     });
 });
 
-routes.post('ADDUSER', async (req, res) => {
-    arm(async () => {
+routes.post('ADDUSER', async(req, res) => {
+    arm(async() => {
         const config = await addUser(req);
         if (config && config.status && config.status !== 200) {
             res.status(config.status).send(error(config.message));
@@ -407,8 +416,8 @@ routes.post('ADDUSER', async (req, res) => {
     });
 });
 
-routes.post('LOGINUSER', async (req, res) => {
-    arm(async () => {
+routes.post('LOGINUSER', async(req, res) => {
+    arm(async() => {
         const config = await loginUser(req);
         if (config && config.status && config.status !== 200) {
             res.status(config.status).send(error(config.message));
@@ -418,8 +427,8 @@ routes.post('LOGINUSER', async (req, res) => {
     });
 });
 
-routes.get('GETUSER', async (req, res) => {
-    arm(async () => {
+routes.get('GETUSER', async(req, res) => {
+    arm(async() => {
         if (req && req.params && req.params.email) {
             const pdts = await getUsers({ email: (req.params.email).toUpperCase() });
             res.send(success(pdts));
@@ -429,8 +438,8 @@ routes.get('GETUSER', async (req, res) => {
     });
 });
 
-routes.post('CONFIRMUSER', async (req, res) => {
-    arm(async () => {
+routes.post('CONFIRMUSER', async(req, res) => {
+    arm(async() => {
         const config = await confirmUser(req);
         if (config && config.status && config.status !== 'success') {
             res.status(config.status).send(error(config.message));
@@ -440,8 +449,8 @@ routes.post('CONFIRMUSER', async (req, res) => {
     });
 });
 
-routes.post('RESENDVERIFCATION', async (req, res) => {
-    arm(async () => {
+routes.post('RESENDVERIFCATION', async(req, res) => {
+    arm(async() => {
         const config = await resendConfiration(req);
         if (config && config.status && config.status !== 'success') {
             res.status(config.status).send(error(config.message));
@@ -451,38 +460,38 @@ routes.post('RESENDVERIFCATION', async (req, res) => {
     });
 });
 
-routes.get('GETUSERS', async (req, res) => {
-    arm(async () => {
+routes.get('GETUSERS', async(req, res) => {
+    arm(async() => {
         let pdts = await getUsers();
         pdts = pdts.filter(r => r.role !== 1);
         res.send(success(pdts));
     });
 });
 
-routes.post('ADDROLE', async (req, res) => {
-    arm(async () => {
+routes.post('ADDROLE', async(req, res) => {
+    arm(async() => {
         const config = await addRole(req);
         res.send(success(config));
     });
 });
 
-routes.get('GETROLES', async (req, res) => {
-    arm(async () => {
+routes.get('GETROLES', async(req, res) => {
+    arm(async() => {
         const filter = req.query;
         const pdts = await getRoles(filter);
         res.send(success(pdts));
     });
 });
 
-routes.put('ADDROLE', async (req, res) => {
-    arm(async () => {
+routes.put('ADDROLE', async(req, res) => {
+    arm(async() => {
         const config = await updateRole(req.body);
         res.send(success(config));
     });
 });
 
-routes.delete('DELETEROLE', async (req, res) => {
-    arm(async () => {
+routes.delete('DELETEROLE', async(req, res) => {
+    arm(async() => {
         if (req && req.params && req.params.roleId) {
             const roleRemoved = await deleteRole(req.params.roleId);
             res.send(success(roleRemoved));

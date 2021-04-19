@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 // Add headers for CORS
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', '*');
@@ -74,6 +74,7 @@ const routes = {
     LOCALELOGS: '/locale/log/all',
     ADDLOCALELOG: '/locale/log/add',
     ARCHIVELOCALELOG: '/locale/log/archive',
+    RECURSIVELOCALELOG: '/locale/log/recursive',
     REFRESHLOCALELOG: '/locale/log/refresh',
     PROCESSEDPRODUCTS: '/products/processed/all',
     ALLPRODUCTS: '/products/all',
@@ -98,16 +99,16 @@ const routes = {
 };
 
 module.exports = {
-    get: async (route, callBack) => {
+    get: async(route, callBack) => {
         app.get(routes[route], callBack);
     },
-    post: async (route, callBack) => {
+    post: async(route, callBack) => {
         app.post(routes[route], callBack);
     },
-    put: async (route, callBack) => {
+    put: async(route, callBack) => {
         app.put(routes[route], callBack);
     },
-    delete: async (route, callBack) => {
+    delete: async(route, callBack) => {
         app.delete(routes[route], callBack);
     },
     listen: (port) => {
