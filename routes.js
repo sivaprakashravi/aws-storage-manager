@@ -95,7 +95,8 @@ const routes = {
     ADDROLE: '/user/role/add',
     DELETEROLE: '/user/role/delete/:roleId',
     GETROLES: '/user/role/all',
-    UPDATEROLES: '/user/role/update'
+    UPDATEROLES: '/user/role/update',
+    AMZNGROUPING: '/scrap/grouping'
 };
 
 module.exports = {

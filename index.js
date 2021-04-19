@@ -5,7 +5,7 @@ const messages = require('./utils/messages');
 const routes = require('./routes');
 const { storage, collectionsToEmpty } = require('./constants/defaults');
 const { categories, addCategory, newCategory, emptyAllCategory, updateStoreInfo, updateCategory, removeCategory } = require('./processors/categories-processor');
-const { products, addProduct, processedProducts, localeProducts, downloadProcessedProducts, product } = require('./processors/products-processor');
+const { products, addProduct, processedProducts, localeProducts, downloadProcessedProducts, product, grouByAMZN } = require('./processors/products-processor');
 const { jobs, addJob, updateJobStatus, stopJob, deleteJob, pauseJob, recursiveJob, primeJob } = require('./processors/jobs-processor');
 const { configuration, setConfiguration, inactivateConfiguration } = require('./processors/configuration-processor');
 const { locales, addLocale, deleteLocale, updateProducts, localeLogs, addLocaleLog, deleteLocaleLog, recursiveLocaleLog, logProdCount } = require('./processors/locale-processor');
@@ -496,6 +496,14 @@ routes.delete('DELETEROLE', async(req, res) => {
             const roleRemoved = await deleteRole(req.params.roleId);
             res.send(success(roleRemoved));
         }
+    });
+});
+
+routes.get('AMZNGROUPING', async(req, res) => {
+    arm(async() => {
+        const filter = req.query;
+        const pdts = await grouByAMZN(filter);
+        res.send(success(pdts));
     });
 });
 

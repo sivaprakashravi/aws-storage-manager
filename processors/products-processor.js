@@ -1,4 +1,4 @@
-const { get, post, count, empty, getSync } = require('./mongo-client-processor');
+const { get, post, count, empty, getSync, groupBy } = require('./mongo-client-processor');
 const moment = require('moment');
 const { ObjectID } = require('mongodb');
 const _ = require('lodash');
@@ -20,8 +20,9 @@ const localeProducts = async (filter = {}) => {
     return prods;
 }
 const processedProducts = async (req) => {
-    const { pageNo, category, subCategory, subCategory1, limit } = req.query;
-    const filters = { category, subCategory, subCategory1 };
+    const { pageNo, category, subCategory, subCategory1, subCategory2, subCategory3, limit } = req.query;
+    let filters = { category, subCategory, subCategory1, subCategory2, subCategory3 };
+    filters = _.pickBy(filters, (v) => v);
     const length = await count('PRODUCTS', filters);
     const productList = await getSync('PRODUCTS', filters, {}, pageNo, limit);
     const merged = productList.map(async p => {
@@ -100,4 +101,16 @@ const addScrapAmz = async (data) => {
     return scrap;
 }
 
-module.exports = { products, product, addProduct, processedProducts, processedProduct, downloadProcessedProducts, localeProducts };
+const grouByAMZN = async () => {
+    const group = { _id: { 
+        category: "$category",
+        subCategory: "$subCategory",
+        subCategory1: "$subCategory1",
+        subCategory2: "$subCategory2",
+        subCategory3: "$subCategory3" }, count: { $sum: 1 } }
+    const g = await groupBy('AMZ-SCRAPPED-DATA', { localed : false }, group );
+    return g;
+    
+}
+
+module.exports = { products, product, addProduct, processedProducts, processedProduct, downloadProcessedProducts, localeProducts, grouByAMZN };

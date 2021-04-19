@@ -161,4 +161,28 @@ const inactivate = async (collectionName, filters) => {
     }
 }
 
-module.exports = { get, getSync, count, post, update, empty, inactivate };
+
+
+const groupBy = async (collectionName, match, group) => {
+    // projection._id = 0;
+    return new Promise((resolve, reject) => {
+        MongoClient.connect(dbHost, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        }, (err, db) => {
+            if (err) reject(err);
+            var dbo = db.db("ECOM-CONSUMER");
+            dbo.collection(collectionName).aggregate([
+                { $match: match },
+                { $group: group }]).toArray((err, d) => {
+                    if (err) reject(err);
+                    else {
+                        resolve(d);
+                    }
+                    db.close();
+                });
+        });
+    }).then(d => d);
+}
+
+module.exports = { get, getSync, count, post, update, empty, inactivate, groupBy };

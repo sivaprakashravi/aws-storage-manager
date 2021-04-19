@@ -1,24 +1,24 @@
-const {get, count, post, update, inactivate, empty } = require('./mongo-client-processor');
+const { get, count, post, update, inactivate, empty } = require('./mongo-client-processor');
 const ObjectID = require('mongodb').ObjectID;
 const moment = require('moment');
 const { weightType, weightCalc, random } = require('./../utils/formatter');
 const { product, localeProducts } = require('./products-processor');
 const _ = require('lodash');
-const locales = async() => {
+const locales = async () => {
     const filter = {};
     filter.active = true;
     const categoryList = await get('LOCALE', filter);
     return categoryList;
 }
 
-const locale = async(filters) => {
+const locale = async (filters) => {
     if (filters) {
         const singleJob = await get('LOCALE', filters);
         return singleJob;
     }
 }
 
-const addLocale = async(data) => {
+const addLocale = async (data) => {
     data.localeId = new Date().getTime();
     data.active = true;
     data.createdBy = 'DEVELOPER';
@@ -41,7 +41,7 @@ const addLocale = async(data) => {
     return newJob;
 }
 
-const deleteLocale = async(localeId) => {
+const deleteLocale = async (localeId) => {
     if (localeId) {
         const singleJob = await inactivate('LOCALE', { localeId });
         return singleJob;
@@ -57,7 +57,7 @@ const deleteLocale = async(localeId) => {
 //     return newNumber;
 // }
 
-const newSKU = async(mapper, index, onlyNumber) => {
+const newSKU = async (mapper, index, onlyNumber) => {
     const id = String(mapper.id ? mapper.id : 0).padStart(2, '0');
     const amzn = '01';
     const sku = new RegExp(`^SKU${amzn}${id}`);
@@ -81,7 +81,7 @@ const newSKU = async(mapper, index, onlyNumber) => {
     }
 }
 
-const updateProducts = async({ body }) => {
+const updateProducts = async ({ body }) => {
     if (!body.noSave) {
         await addLocaleLog(body);
     } else {
@@ -121,7 +121,7 @@ const updateProducts = async({ body }) => {
             if (deleted) {
                 const skus = [];
                 productsList.forEach((p, pi) => {
-                    skus.push(new Promise(async(resolve, reject) => {
+                    skus.push(new Promise(async (resolve, reject) => {
                         try {
                             const existingSKU = deleted.find(d => d.asin === p.asin);
                             if (!existingSKU) {
@@ -130,13 +130,16 @@ const updateProducts = async({ body }) => {
                             } else {
                                 p.sku = existingSKU.sku ? existingSKU.sku : await newSKU(p, pi);
                             }
-                            resolve();
+                            const amznUpdate = await update('AMZ-SCRAPPED-DATA', { asin: p.asin }, { localed: true });
+                            if (amznUpdate) {
+                                resolve();
+                            }
                         } catch (e) {
                             reject(e);
                         }
                     }));
                 });
-                Promise.all(skus).then(async() => {
+                Promise.all(skus).then(async () => {
                     await post('PRODUCTS', { insertMode: 'insertMany' }, productsList);
                 })
             }
@@ -148,29 +151,34 @@ const updateProducts = async({ body }) => {
     }
 }
 
-const localeLogs = async(filter = {}) => {
+const localeLogs = async (filter = {}) => {
     filter.active = true;
     const categoryList = await get('LOCALE-LOGS', filter);
     return categoryList;
 }
 
-const localeLog = async(id) => {
+const localeLog = async (id) => {
     if (id) {
         const singleJob = await get('LOCALE-LOGS', { _id: ObjectID(id) });
         return singleJob;
     }
 }
 
-const logProdCount = async({ log, category, subCategory }) => {
+const logProdCount = async ({ log, category, subCategory, subCategory1, subCategory2, subCategory3 }) => {
+    let filter = { category, subCategory, subCategory1, subCategory2, subCategory3 };
+    filter = _.pickBy(filter, v => v);
     if (log) {
         log = Number(log);
-        const length = await count('AMZ-SCRAPPED-DATA', { category, subCategory });
-        const countUpdate = await update('LOCALE-LOGS', { log }, { count: length });
+        const scrapperCount = await count('AMZ-SCRAPPED-DATA', { category, subCategory });
+        const countUpdate = await update('LOCALE-LOGS', { log }, { count: scrapperCount });
         return countUpdate;
+    } else {
+        const scrapperCount = await count('AMZ-SCRAPPED-DATA', filter);
+        return scrapperCount;
     }
 }
 
-const addLocaleLog = async(data) => {
+const addLocaleLog = async (data) => {
     data.log = new Date().getTime();
     data.active = true;
     data.loggedBy = 'DEVELOPER';
@@ -184,13 +192,13 @@ const addLocaleLog = async(data) => {
     return { message };
 }
 
-const deleteLocaleLog = async(log) => {
+const deleteLocaleLog = async (log) => {
     if (log) {
         const singleJob = await inactivate('LOCALE-LOGS', { log });
         return singleJob;
     }
 }
-const recursiveLocaleLog = async(log) => {
+const recursiveLocaleLog = async (log) => {
     if (log) {
         const isLog = await localeLogs({ log });
         const recursiveApplied = await update('LOCALE-LOGS', { log }, { recursive: !isLog[0].recursive });
@@ -198,7 +206,7 @@ const recursiveLocaleLog = async(log) => {
     }
 }
 
-const priceUpdate = async(amznProducts, localeJob) => {
+const priceUpdate = async (amznProducts, localeJob) => {
     const { localeId, variationFactor, volumetricWtFactor, packingCost, freightUD, freightDC, ccpKG, ccpHAWB, sensitiveCargo, handlingCharges, markUp, beaCukai, pfComission, ppn, ccv } = localeJob;
     const priceList = amznProducts.map(({ salePrice, shippingPrice, asin, item_dimensions_weight }) => {
         const prodPrice = (salePrice ? Number(salePrice) : 0) + (shippingPrice ? Number(shippingPrice) : 0);
