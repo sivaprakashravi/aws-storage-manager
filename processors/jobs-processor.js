@@ -45,6 +45,36 @@ const deleteJob = async (scheduleId) => {
     }
 }
 
+const pauseJob = async (id, scheduleId, paused) => {
+    const updated = await update('JOBS', {
+        _id: ObjectID(id),
+        scheduleId
+    }, {
+        paused
+    });
+    return updated;
+}
+
+const recursiveJob = async (id, scheduleId, recursive) => {
+    const updated = await update('JOBS', {
+        _id: ObjectID(id),
+        scheduleId
+    }, {
+        recursive
+    });
+    return updated;
+}
+
+const primeJob = async (id, scheduleId, prime) => {
+    const updated = await update('JOBS', {
+        _id: ObjectID(id),
+        scheduleId
+    }, {
+        prime
+    });
+    return updated;
+}
+
 const updateJobStatus = async (id, scheduleId, percentage, status, address) => {
     const activeJob = await job(id);
     percentage = percentage ? Number(percentage).toFixed(2) : 0;
@@ -62,4 +92,4 @@ const updateJobStatus = async (id, scheduleId, percentage, status, address) => {
     return categoryInsert;
 }
 
-module.exports = { jobs, addJob, updateJobStatus, stopJob, deleteJob };
+module.exports = { jobs, addJob, updateJobStatus, stopJob, deleteJob, pauseJob, recursiveJob, primeJob };
