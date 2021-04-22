@@ -37,7 +37,7 @@ const addJob = async (data) => {
 
 const deleteJob = async (scheduleId) => {
     const sJob = await jobs({ scheduleId });
-    if (sJob && sJob.length && sJob[0].status === 'New' && sJob[0].scheduleId === scheduleId) {
+    if (sJob && sJob.length && (sJob[0].status === 'New' || sJob[0].status === 'Error') && sJob[0].scheduleId === scheduleId) {
         const removed = await empty('JOBS', { scheduleId });
         return removed;
     } else {
@@ -75,7 +75,7 @@ const primeJob = async (id, scheduleId, prime) => {
     return updated;
 }
 
-const updateJobStatus = async (id, scheduleId, percentage, status, address) => {
+const updateJobStatus = async (id, scheduleId, percentage, status, address, message) => {
     const activeJob = await job(id);
     percentage = percentage ? Number(percentage).toFixed(2) : 0;
     scheduleId = Number(scheduleId);
@@ -86,6 +86,7 @@ const updateJobStatus = async (id, scheduleId, percentage, status, address) => {
     }, {
         percentage,
         address,
+        message,
         status: percentage > 0 ? ((percentage >= 100) ? 'Completed' : 'Running') : status,
         active: percentage > 0 && (percentage >= 100) && !activeJob[0].interval ? false : true
     });

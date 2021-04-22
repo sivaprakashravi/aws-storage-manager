@@ -20,8 +20,16 @@ const localeProducts = async (filter = {}) => {
     return prods;
 }
 const processedProducts = async (req) => {
-    const { pageNo, category, subCategory, subCategory1, subCategory2, subCategory3, limit } = req.query;
+    const { pageNo, category, subCategory, subCategory1, subCategory2, subCategory3, asin, sku, limit } = req.query;
     let filters = { category, subCategory, subCategory1, subCategory2, subCategory3 };
+    if (asin) {
+        const regexASIN = new RegExp(asin, 'i');
+        filters.asin = { $regex: regexASIN };
+    }
+    if (sku) {
+        const regexSKU = new RegExp(sku, 'i');
+        filters.sku = { $regex: regexSKU };
+    }
     filters = _.pickBy(filters, (v) => v);
     const length = await count('PRODUCTS', filters);
     const productList = await getSync('PRODUCTS', filters, {}, pageNo, limit);
@@ -102,15 +110,18 @@ const addScrapAmz = async (data) => {
 }
 
 const grouByAMZN = async () => {
-    const group = { _id: { 
-        category: "$category",
-        subCategory: "$subCategory",
-        subCategory1: "$subCategory1",
-        subCategory2: "$subCategory2",
-        subCategory3: "$subCategory3" }, count: { $sum: 1 } }
-    const g = await groupBy('AMZ-SCRAPPED-DATA', { localed : false }, group );
+    const group = {
+        _id: {
+            category: "$category",
+            subCategory: "$subCategory",
+            subCategory1: "$subCategory1",
+            subCategory2: "$subCategory2",
+            subCategory3: "$subCategory3"
+        }, count: { $sum: 1 }
+    }
+    const g = await groupBy('AMZ-SCRAPPED-DATA', { localed: false }, group);
     return g;
-    
+
 }
 
 module.exports = { products, product, addProduct, processedProducts, processedProduct, downloadProcessedProducts, localeProducts, grouByAMZN };
