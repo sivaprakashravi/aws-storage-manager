@@ -58,7 +58,9 @@ const deleteLocale = async (localeId) => {
 // }
 
 const newSKU = async (mapper, index, onlyNumber) => {
-    const id = String(mapper.id ? mapper.id : 0).padStart(2, '0');
+    const category = await get('CATEGORIES', {nId: mapper.category});
+    const catId = category[0].id;
+    const id = String(catId ? catId : 0).padStart(2, '0');
     const amzn = '01';
     const sku = new RegExp(`^SKU${amzn}${id}`);
     const sort = { $natural: -1 };
