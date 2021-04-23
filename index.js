@@ -201,10 +201,10 @@ routes.delete('REMOVECATEGORY', (req, res) => {
 });
 
 routes.put('UPDATESTOREINFO', (req, res) => {
-    const { category, subCategory, subCategory1, storeId, categoryCode } = req.query;
+    const { category, subCategory, subCategory1, subCategory2, subCategory3, storeId, categoryCode } = req.query;
     arm(async() => {
         if (category) {
-            const updated = await updateStoreInfo(category, subCategory, subCategory1, storeId, categoryCode);
+            const updated = await updateStoreInfo(category, subCategory, subCategory1, subCategory2, subCategory3, storeId, categoryCode);
             res.send(success(updated));
         }
     });

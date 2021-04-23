@@ -65,21 +65,21 @@ const removeCategory = async(nId) => {
 
 }
 
-const updateStoreInfo = async (category, subCategory, subCategory1, storeId, categoryCode) => {
+const updateStoreInfo = async (category, subCategory, subCategory1, subCategory2, subCategory3, storeId, categoryCode) => {
     let filter = {
         nId: category
     };
     let values = {
         storeId
     }
-    if (subCategory) {
+    if (subCategory && !subCategory1 && !subCategory2 && !subCategory3) {
         filter['subCategory.nId'] = subCategory;
         values = {
             "subCategory.$.storeId": storeId,
             "subCategory.$.categoryCode": categoryCode
         }
     }
-    if (subCategory1) {
+    if (subCategory1 && !subCategory2 && !subCategory3) {
         filter['subCategory.subCategory.nId'] = subCategory1;
         const cat = await get('CATEGORIES', filter);
         const index = cat[0].subCategory.findIndex(f => f.nId === subCategory);   
@@ -88,6 +88,35 @@ const updateStoreInfo = async (category, subCategory, subCategory1, storeId, cat
         values = {
             [`subCategory.${index}.subCategory.${scsIndex}.storeId`]: storeId,
             [`subCategory.${index}.subCategory.${scsIndex}.categoryCode`]: categoryCode
+        }
+    }
+    if (subCategory2 && !subCategory3) {
+        filter['subCategory.subCategory.subCategory.nId'] = subCategory2;
+        const cat = await get('CATEGORIES', filter);
+        const index = cat[0].subCategory.findIndex(f => f.nId === subCategory);   
+        const sc = cat[0].subCategory.find(f => f.nId === subCategory);    
+        const scsIndex = sc.subCategory.findIndex(sf => sf.nId === subCategory1);   
+        const sc1 = sc.subCategory.find(f => f.nId === subCategory1);    
+        const scsIndex1 = sc1.subCategory.findIndex(sf => sf.nId === subCategory2);   
+        values = {
+            [`subCategory.${index}.subCategory.${scsIndex}.subCategory.${scsIndex1}.storeId`]: storeId,
+            [`subCategory.${index}.subCategory.${scsIndex}.subCategory.${scsIndex1}.categoryCode`]: categoryCode
+        }
+    }
+    if (subCategory3) {
+        filter['subCategory.subCategory.subCategory.subCategory.nId'] = subCategory3;
+        const cat = await get('CATEGORIES', filter);
+        const index = cat[0].subCategory.findIndex(f => f.nId === subCategory);   
+        const sc = cat[0].subCategory.find(f => f.nId === subCategory);    
+        const scsIndex = sc.subCategory.findIndex(sf => sf.nId === subCategory1);   
+        const sc1 = sc.subCategory.find(f => f.nId === subCategory1);    
+        const scsIndex1 = sc1.subCategory.findIndex(sf => sf.nId === subCategory2);  
+
+        const sc2 = sc1.subCategory.find(f => f.nId === subCategory2);    
+        const scsIndex2 = sc2.subCategory.findIndex(sf => sf.nId === subCategory3);   
+        values = {
+            [`subCategory.${index}.subCategory.${scsIndex}.subCategory.${scsIndex1}.subCategory.${scsIndex2}.storeId`]: storeId,
+            [`subCategory.${index}.subCategory.${scsIndex}.subCategory.${scsIndex1}.subCategory.${scsIndex2}.categoryCode`]: categoryCode
         }
     }
     const emptied = await update('CATEGORIES', filter, values);
