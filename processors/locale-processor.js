@@ -92,7 +92,7 @@ const updateProducts = async ({ body }) => {
     }
     let { category, subCategory, subCategory1 } = body;
     const localeObj = await locale(body.locale);
-    const filter = { category, subCategory, subCategory1 };
+    const filter = { category, subCategory, subCategory1, localed: false };
     const amznProducts = await get('AMZ-SCRAPPED-DATA', filter);
     let count = 0;
     if (amznProducts && amznProducts.length) {
@@ -100,7 +100,7 @@ const updateProducts = async ({ body }) => {
         const priceList = await priceUpdate(amznProducts, localeJob);
         const asin = amznProducts.map(a => a.asin);
         const productsList = amznProducts.map(amzn => {
-            const product = _.omit(amzn, ['_id', 'buybox_new_landed_price', 'buybox_new_listing_price', 'buybox_new_shipping_price', 'salePrice', 'shippingPrice']);
+            const product = _.omit(amzn, ['_id', 'buybox_new_landed_price', 'buybox_new_listing_price', 'buybox_new_shipping_price', 'salePrice', 'shippingPrice', 'history']);
             return product;
         });
         const deletePrice = asin.map(async a => {
@@ -171,10 +171,11 @@ const logProdCount = async ({ log, category, subCategory, subCategory1, subCateg
     filter = _.pickBy(filter, v => v);
     if (log) {
         log = Number(log);
-        const scrapperCount = await count('AMZ-SCRAPPED-DATA', { category, subCategory });
+        const scrapperCount = await count('AMZ-SCRAPPED-DATA', { category, subCategory, localed: false });
         const countUpdate = await update('LOCALE-LOGS', { log }, { count: scrapperCount });
         return countUpdate;
     } else {
+        filter.localed = false;
         const scrapperCount = await count('AMZ-SCRAPPED-DATA', filter);
         return scrapperCount;
     }
@@ -186,7 +187,7 @@ const addLocaleLog = async (data) => {
     data.loggedBy = 'DEVELOPER';
     data.loggedOn = moment().format();
     const { category, subCategory, locale } = data;
-    const filter = { category, subCategory };
+    const filter = { category, subCategory, localed: false };
     const length = await count('AMZ-SCRAPPED-DATA', filter);
     data.count = length;
     const newJob = await post('LOCALE-LOGS', { insertMode: 'insertOne' }, data);
