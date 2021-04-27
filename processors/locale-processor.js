@@ -84,12 +84,6 @@ const newSKU = async (mapper, index, onlyNumber) => {
 }
 
 const updateProducts = async ({ body }) => {
-    if (!body.noSave) {
-        await addLocaleLog(body);
-    } else {
-        await update('LOCALE-LOGS', { log: body.log }, { status: 'applied', recursive: body.recursive });
-
-    }
     let { category, subCategory, subCategory1, subCategory2, subCategory3 } = body;
     const localeObj = await locale(body.locale);
     let filter = { category, subCategory, subCategory1, subCategory2, subCategory3, localed: false };
@@ -148,10 +142,13 @@ const updateProducts = async ({ body }) => {
             }
         });
         count = amznProducts.length;
-        return { message: `${count} Products Affected` };
-    } else {
-        return { message: `${count} Products Affected` };
     }
+    if (!body.noSave) {
+        await addLocaleLog(body);
+    } else {
+        await update('LOCALE-LOGS', { log: body.log }, { status: 'applied', recursive: body.recursive });
+    }
+    return { message: `${count} Products Affected` };
 }
 
 const localeLogs = async (filter = {}) => {
