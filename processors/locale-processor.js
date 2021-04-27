@@ -90,9 +90,10 @@ const updateProducts = async ({ body }) => {
         await update('LOCALE-LOGS', { log: body.log }, { status: 'applied', recursive: body.recursive });
 
     }
-    let { category, subCategory, subCategory1 } = body;
+    let { category, subCategory, subCategory1, subCategory2, subCategory3 } = body;
     const localeObj = await locale(body.locale);
-    const filter = { category, subCategory, subCategory1, localed: false };
+    let filter = { category, subCategory, subCategory1, subCategory2, subCategory3, localed: false };
+    filter = _.pickBy(filter, v => v);
     const amznProducts = await get('AMZ-SCRAPPED-DATA', filter);
     let count = 0;
     if (amznProducts && amznProducts.length) {
