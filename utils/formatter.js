@@ -13,16 +13,16 @@ const weightType = (string) => {
         if (splt.length === 2) {
             return {
                 weight: Number(splt[0]),
-                type: splt[1]
+                type: splt[1].toUpperCase()
             };
         }
     }
 }
 
 const weightCalc = ({ weight, type }) => {
-    if (type.indexOf('ounce') > -1) {
+    if (type.indexOf('OUNCE') > -1) {
         return weight * 0.0283495;
-    } else if (type.indexOf('pound') > -1) {
+    } else if (type.indexOf('POUND') > -1) {
         return weight * 0.453592;
     } else {
         return weight;
