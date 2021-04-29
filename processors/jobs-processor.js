@@ -3,6 +3,9 @@ const ObjectID = require('mongodb').ObjectID;
 const moment = require('moment');
 const jobs = async (filter = {}) => {
     // filter.active = true;
+    if(filter && filter.scheduleId) {
+        filter.scheduleId = Number(filter.scheduleId);
+    }
     const categoryList = await get('JOBS', filter);
     return categoryList;
 }
