@@ -393,7 +393,7 @@ routes.post('ADDNOTIFICATION', async(req, res) => {
 
 routes.get('GETORDERS', async(req, res) => {
     arm(async() => {
-        const pdts = await orders();
+        const pdts = await orders(req.query);
         res.send(success(pdts));
     });
 });

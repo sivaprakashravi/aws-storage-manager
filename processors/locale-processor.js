@@ -209,8 +209,11 @@ const recursiveLocaleLog = async (log) => {
 
 const priceUpdate = async (amznProducts, localeJob) => {
     const { localeId, variationFactor, volumetricWtFactor, packingCost, freightUD, freightDC, ccpKG, ccpHAWB, sensitiveCargo, handlingCharges, markUp, beaCukai, pfComission, ppn, ccv } = localeJob;
-    const priceList = amznProducts.map(({ salePrice, shippingPrice, asin, item_dimensions_weight }) => {
-        const prodPrice = (salePrice ? Number(salePrice) : 0) + (shippingPrice ? Number(shippingPrice) : 0);
+    const priceList = amznProducts.map(({ salePrice, buybox_new_listing_price, shippingPrice, asin, item_dimensions_weight }) => {
+        let prodPrice = (salePrice ? Number(salePrice) : 0) + (shippingPrice ? Number(shippingPrice) : 0);
+        if(!prodPrice) {
+            prodPrice = (buybox_new_listing_price ? Number(buybox_new_listing_price) : 0)
+        }
         let weight = 0;
         if (item_dimensions_weight) {
             const wCalc = weightType(item_dimensions_weight);

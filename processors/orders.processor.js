@@ -1,22 +1,26 @@
-const { get, post, empty, inactivate } = require('./mongo-client-processor');
 const { json } = require('./../constants/data');
 const { orderStatus, tokoConfig } = require('./../constants/defaults');
 const axios = require('axios');
 const btoa = require('btoa');
+const moment = require('moment');
 const orders = async (query) => {
-    const token = await clientToken();
-    const headers = {
-        Authorization: `Bearer ${token}`
-    };
-    // "https://fs.tokopedia.net/v2/order/list?fs_id=15125&from_date=1621714066&to_date=1621906666&page=1&per_page=10"
-
-    const auth = await axios.get(`https://fs.tokopedia.net/v2/order/list?fs_id=${tokoConfig.fsId}&from_date=${query.from}&to_date=${query.to}&page=1&per_page=10`,
-        {headers}
-    );
-    if(auth && auth.data && auth.data.data) {
-        return auth.data.data;
-    } else {
-        return [];
+    const { from, to } = query;
+    if(from && to) {
+        const diff = moment.unix(from).diff(moment.unix(to), 'days');
+        const token = await clientToken();
+        const headers = {
+            Authorization: `Bearer ${token}`
+        };
+        // "https://fs.tokopedia.net/v2/order/list?fs_id=15125&from_date=1621714066&to_date=1621906666&page=1&per_page=10"
+    
+        const auth = await axios.get(`https://fs.tokopedia.net/v2/order/list?fs_id=${tokoConfig.fsId}&from_date=${from}&to_date=${to}&page=1&per_page=10`,
+            { headers }
+        );
+        if (auth && auth.data && auth.data.data) {
+            return auth.data.data;
+        } else {
+            return [];
+        }
     }
 }
 const clientToken = async () => {
