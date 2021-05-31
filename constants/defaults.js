@@ -1,7 +1,7 @@
 const port = 8000;
 const host = 'https://www.amazon.com';
 const login = `${host}ap/signin?openid.pape.max_auth_age=0&openid.return_to=https://www.amazon.in/ref=nav_ya_signin&openid.identity=http://specs.openid.net/auth/2.0/identifier_select&openid.assoc_handle=inflex&openid.mode=checkid_setup&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select&openid.ns=http://specs.openid.net/auth/2.0`;
-const dbHost = "mongodb://localhost:27017/";
+const dbHost = "mongodb+srv://exborder:exborder321@cluster0.xsetj.mongodb.net/test";
 const jQ = "./libs/jquery-3.5.1.slim.min.js";
 const collectionsToEmpty = [
     'AMZ-SCRAPPED-DATA', 'JOBS', 'LOCALE', 'LOCALE-LOGS', 'PRICE', 'PRODUCTS', 'NOTIFICATIONS'
