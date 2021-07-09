@@ -53,7 +53,8 @@ const orderStatus = {
 const tokoConfig = {
     clientId: 'f9fc210831164f5382ade315816f0ad8',
     clientSecretKey: 'ed3a4554fdbe4c608e6481eb158c5448',
-    fsId: 15125
+    fsId: 14672,
+    shopId: 11532192
 }
 
 module.exports = { port, host, login, dbHost, jQ, storage, collectionsToEmpty, downloadProducts, orderStatus, tokoConfig };

@@ -394,7 +394,11 @@ routes.post('ADDNOTIFICATION', async(req, res) => {
 routes.get('GETORDERS', async(req, res) => {
     arm(async() => {
         const pdts = await orders(req.query);
-        res.send(success(pdts));
+        if(pdts && !pdts.status) {
+            res.send(success(pdts));
+        } else {
+            res.status(pdts.status).send(pdts.statusText);
+        }
     });
 });
 
