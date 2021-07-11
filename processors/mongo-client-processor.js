@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const { dbHost } = require('./../constants/defaults');
 const ObjectID = require('mongodb').ObjectID;
+const dbx = require("../utils/connect");
 
 const get = async (collectionName, filters = {}, projection = {}, sort = { createdOn: -1 }, limit = 0) => {
     // projection._id = 0;
@@ -78,39 +79,36 @@ const count = async (collectionName, filters = {}) => {
 
 const post = (collectionName, options, data) => {
     return new Promise((resolve, reject) => {
-        MongoClient.connect(dbHost, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        }, (err, db) => {
-            if (err) reject(err);
-            var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName)[options.insertMode](data, (err, res) => {
-                if (err) reject(err);
-                // console.log("1 document inserted");
-                db.close();
-                resolve(true);
-            });
+        dbx.connect((dbo, err) => {
+            if (!err) {
+                dbo.collection(collectionName)[options.insertMode](data, (er, res) => {
+                    if (er) {
+                        reject(er);
+                    } else {
+                        resolve(res);
+                    }
+                });
+            } else {
+                reject(err);
+            }
         });
     }).then(d => d);
 }
 
 const update = (collectionName, query, values) => {
     return new Promise((resolve, reject) => {
-        MongoClient.connect(dbHost, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        }, (err, db) => {
-            if (err) reject(err);
-            var dbo = db.db("ECOM-CONSUMER");
-            dbo.collection(collectionName).updateOne(query,
-                { $set: values },
-                // { upsert: true },
-                function (err, res) {
-                    if (err) throw err;
-                    // console.log("1 document updated");
-                    db.close();
-                    resolve(true);
+        dbx.connect((dbo, err) => {
+            if (!err) {
+                dbo.collection(collectionName).updateOne(query, { $set: values }, (er, res) => {
+                    if (er) {
+                        reject(er);
+                    } else {
+                        resolve(res);
+                    }
                 });
+            } else {
+                reject(err);
+            }
         });
     }).then(d => d);
 }

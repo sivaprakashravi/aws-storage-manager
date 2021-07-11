@@ -1,7 +1,7 @@
 const port = 8000;
 const host = 'https://www.amazon.com';
 const login = `${host}ap/signin?openid.pape.max_auth_age=0&openid.return_to=https://www.amazon.in/ref=nav_ya_signin&openid.identity=http://specs.openid.net/auth/2.0/identifier_select&openid.assoc_handle=inflex&openid.mode=checkid_setup&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select&openid.ns=http://specs.openid.net/auth/2.0`;
-const dbHost = "mongodb+srv://exborder:exborder321@cluster0.xsetj.mongodb.net/test";
+const dbHost = "mongodb+srv://exborder:exborder321@cluster0.xsetj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const dbName = "ECOM-CONSUMER";
 const jQ = "./libs/jquery-3.5.1.slim.min.js";
 const collectionsToEmpty = [
@@ -15,7 +15,7 @@ const downloadProducts = {
     'label': 'Nama Produk*',
     'description': 'Deskripsi Produk',
     'category': 'Kategori Kode*',
-    'item_dimensions_weight': 'Berat* (Gram)',
+    'item_dimensions_weight': 'Berat* (Gram)', 
     'price': 'Harga (Rp)*'
 }
 
@@ -52,10 +52,10 @@ const orderStatus = {
 }
 
 const tokoConfig = {
-    clientId: 'f9fc210831164f5382ade315816f0ad8',
-    clientSecretKey: 'ed3a4554fdbe4c608e6481eb158c5448',
-    fsId: 14672,
-    shopId: 11532192
+    clientId: '2a46ca353e3a4fe1a078a49cc8b4cbdb',
+    clientSecretKey: '713aa88cdc3940bbb0ae33338a1268b0',
+    fsId: 15321,
+    shopId: 11599703
 }
 
 module.exports = { port, host, login, dbHost, dbName, jQ, storage, collectionsToEmpty, downloadProducts, orderStatus, tokoConfig };
