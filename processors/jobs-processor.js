@@ -40,7 +40,7 @@ const addJob = async (data) => {
 
 const deleteJob = async (scheduleId) => {
     const sJob = await jobs({ scheduleId });
-    if (sJob && sJob.length && (sJob[0].status === 'New' || sJob[0].status === 'Error') && sJob[0].scheduleId === scheduleId) {
+    if (sJob && sJob.length && (sJob[0].status === 'New' || sJob[0].status === 'Error' || sJob[0].status === 'Completed') && sJob[0].scheduleId === scheduleId) {
         const removed = await empty('JOBS', { scheduleId });
         return removed;
     } else {
