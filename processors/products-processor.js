@@ -47,13 +47,15 @@ const downloadProcessedProducts = async (req) => {
     const length = await count('PRODUCTS', filters);
     const productList = await get('PRODUCTS', filters);
     const { proxies } = await configuration('CONFIGURATION');
-    const host = proxies.split(',')[0];
+    const hosts = proxies.split(',');
     const merged = productList.map(async p => {
         const price = await get('PRICE', { asin: p.asin });
         return _.merge(p, price[0]);
     });
     return Promise.all(merged).then(d => {
         const convert = d.map(i => {
+            const jobId = i.jobId;
+            const job = await get('JOBS', { scheduleId: jobId });
             if (i.item_dimensions_weight) {
                 const wCalc = weightType(i.item_dimensions_weight);
                 i.item_dimensions_weight = (weightCalc(wCalc) * 1000).toString();
@@ -66,6 +68,14 @@ const downloadProcessedProducts = async (req) => {
             }
             if (i.altImages) {
                 i.altImages.forEach((image, imIndex) => {
+                    // To do - to handle dynamically
+                    let host = hosts[0];
+                    if (job.address === "172.26.2.171") {
+                        host = hosts[0];
+                    } else if (hosts.length > 1 && job.address === "172.26.0.214") {
+                        host = hosts[1];
+                    }
+                    // To do - to handle dynamically
                     mapped[`img${imIndex + 1}`] = `${host}:${storage.scrapPort}/amazon/images/${i.asin}/${image}`;
                 })
 
@@ -77,7 +87,7 @@ const downloadProcessedProducts = async (req) => {
             mapped['Nomor Etalase'] = storeId;
             mapped['Waktu Proses Preorder'] = '';
             mapped['Kondisi*'] = 'New';
-            mapped['SKU Name'] = `SKU${i.sku}`;
+            mapped['SKU Name'] = `${i.sku}`;
             mapped['Status*'] = 'Active';
             mapped['Jumlah Stok*'] = 'New';
             mapped['Asuransi Pengiriman'] = 'Yes';
